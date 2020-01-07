@@ -16,7 +16,7 @@ rates_Lo <- function(t, state, parameters) {
     
     #set-up equations (to calculate values necessary for the differential equations)
     #Temperature correction:
-    C_T <- exp((T_A/T_0)-(T_A/T_field(t))) * (1+exp((T_AL/T_0)-(T_AL/T_L))+exp((T_AH/T_H)-(T_AH/T_0))) * ((1+exp((T_AL/T_field(t))-(T_AL/T_L))+exp((T_AH/T_H)-(T_AH/T_field(t))))^-1) #C_T has no units
+    C_T <- exp((T_A/T_0)-(T_A/T_field(t))) * (1+exp((T_AL/T_0)-(T_AL/T_L))+exp((T_AH/T_H)-(T_AH/T_0))) * ((1+exp((T_AL/T_field(t))-(T_AL/T_L))+exp((T_AH/T_H)-(T_AH/T_field(t))))^-1)
     
     J_EN_AM <-  JENAM * C_T #temperature correction of max assimilation rate of N
     #Specific assimilation rate of N
@@ -67,7 +67,7 @@ rates_Lo <- function(t, state, parameters) {
     J_VM <- J_VM_C+J_VM_N #unit: 1/h
     J_EC_R <- Output_loop[8] #unit: mol EC/molM_V/h
     J_EN_R <- Output_loop[9] #unit: mol EN/molM_V/h
-    info <- Output_loop[10] #1 if convergence, 0 if no convergence (no units)
+    info <- Output_loop[10] #1 if convergence, 0 if no convergence
     
     #Allocation to growth
     #Specific growth flux for nitrogen 

@@ -25,7 +25,7 @@ Photosynthesis <- function(params_Lo, state_Lo, w_V, w_EN, w_EC, w_O2, T_dat, I_
   
   T_dat <- T_dat + 273.15 #if converstion to Kelvin is needed
   #temperature correction
-  C_T <- exp((T_A/T_0)-(T_A/T_dat)) * (1+exp((T_AL/T_0)-(T_AL/T_L))+exp((T_AH/T_H)-(T_AH/T_0))) * ((1+exp((T_AL/T_dat)-(T_AL/T_L))+exp((T_AH/T_H)-(T_AH/T_dat)))^-1) #C_T has no units
+  C_T <- exp((T_A/T_0)-(T_A/T_dat)) * (1+exp((T_AL/T_0)-(T_AL/T_L))+exp((T_AH/T_H)-(T_AH/T_0))) * ((1+exp((T_AL/T_dat)-(T_AL/T_L))+exp((T_AH/T_H)-(T_AH/T_dat)))^-1)
   #Dry weight Biomass calculation
   W <- (w_V + m_EN * w_EN + m_EC * w_EC) * M_V  # g
   

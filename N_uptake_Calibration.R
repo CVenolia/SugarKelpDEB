@@ -20,7 +20,7 @@ Nuptake <- function(params_Lo, T_dat, Nmax, w_EN){
   
   T_dat <- T_dat + 273.15 #if converstion to Kelvin is needed
   #temperature correction
-  C_T <- exp((T_A/T_0)-(T_A/T_dat)) * (1+exp((T_AL/T_0)-(T_AL/T_L))+exp((T_AH/T_H)-(T_AH/T_0))) * ((1+exp((T_AL/T_dat)-(T_AL/T_L))+exp((T_AH/T_H)-(T_AH/T_dat)))^-1) #C_T has no units
+  C_T <- exp((T_A/T_0)-(T_A/T_dat)) * (1+exp((T_AL/T_0)-(T_AL/T_L))+exp((T_AH/T_H)-(T_AH/T_0))) * ((1+exp((T_AL/T_dat)-(T_AL/T_L))+exp((T_AH/T_H)-(T_AH/T_dat)))^-1)
   N <- seq(0, Nmax, 1e-08) #array from 0 to Nmax stepped by an interval of 1e-08
   
   #this first conversion is taking this parameter from model units and putting it in the units of the calibration data
