@@ -59,7 +59,7 @@ w_O2 <- 32 #g/mol
 params_Lo <- c(#maximum volume-specific assimilation rate of N before temperature correction
                JENAM = 2.5e-4, #1.2e-4, #mol N / molM_V / h
                #maximum surface-specific assimilation rate of N
-               K_N = 2.667e-6, #molNO3 and NH4/L
+               K_N = 2.667e-6, #molNO3 and NO2/L
                #max volume-specific carbon dioxide assimilation rate
                JCO2M = 0.0075, #molC/molM_V/h
                #half saturation constant of C uptake
@@ -109,9 +109,14 @@ params_Lo <- c(#maximum volume-specific assimilation rate of N before temperatur
 ####### State Inititial conditions ############
 #Initial conditions of state variables
 #these values are not coming from any field data or literature information, estimated
-state_Lo <- c(m_EC = 0.4, #mol C/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
+state_Lo <- c(m_EC = 0.9, #mol C/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
               m_EN = 0.03, #mol N/molM_V #Reserve density of N reserve (initial mass of N reserve per intital mass of structure)
-              M_V = 8.914286e-05) #molM_V #initial mass of structure
+              M_V = 4.503984e-05) #molM_V #initial mass of structure
+#0.0039 = (29.89+0.9*62+0.03*30)*M_V
+#0.4
+#4.503984e-05
+#8.914286e-05
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #######Time step to run the model on#######
 #(First number of time step, last number of time step, interval to step)
