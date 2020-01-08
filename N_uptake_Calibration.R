@@ -15,8 +15,9 @@ Nuptake <- function(params_Lo, T_dat, Nmax, w_EN){
   T_AH <- params_Lo$T_AH
   JENAM <- params_Lo$JENAM
   K_N <- params_Lo$K_N
-  B <- 0.019 #These should be set based on whatever information you have on literature or field data being used
-  M_V <- 0.0005 #in Espinoza and Chapman (1983), blade length starts at around 3 cm, which allows for an estmiation of B
+  W <- 0.019 #These should be set based on whatever information you have on literature or field data being used
+  M_V <- 0.0003418 #in Espinoza and Chapman (1983), blade length starts at around 3 cm, which allows for an estmiation of B
+  #0.019 = (29.89+0.4*62+0.03*30)*M_V
   
   T_dat <- T_dat + 273.15 #if converstion to Kelvin is needed
   #temperature correction
@@ -24,7 +25,7 @@ Nuptake <- function(params_Lo, T_dat, Nmax, w_EN){
   N <- seq(0, Nmax, 1e-08) #array from 0 to Nmax stepped by an interval of 1e-08
   
   #this first conversion is taking this parameter from model units and putting it in the units of the calibration data
-  JENAM <- JENAM * M_V/B #convert from mol N / molM_V / h to mol N / g DW / hour
+  JENAM <- JENAM * M_V/W #convert from mol N / molM_V / h to mol N / g DW / hour
   J_EN_AM <-  JENAM * C_T #temperature correct max assimilation rate of N03
   #Specific assimilation rate of N
   J_EN_A <- J_EN_AM*(N/(N+K_N))

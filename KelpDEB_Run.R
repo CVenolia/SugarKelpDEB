@@ -57,7 +57,7 @@ w_O2 <- 32 #g/mol
 
 ##### Parameters compiled #####
 params_Lo <- c(#maximum volume-specific assimilation rate of N before temperature correction
-               JENAM = 3e-4, #mol N / molM_V / h
+               JENAM = 2.5e-4, #1.2e-4, #mol N / molM_V / h
                #maximum surface-specific assimilation rate of N
                K_N = 2.667e-6, #molNO3 and NH4/L
                #max volume-specific carbon dioxide assimilation rate
@@ -841,7 +841,7 @@ plot_N <- ggplot(data = sol_all, aes(Date, N, color = source)) +
   theme(legend.position="none") +
   theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
   ylim(0, 1e-05) +
-  labs(x= "Date (2017-2018)", y = bquote('mol' ~NO[3]^{"-"}~ 'L'^"-1")) +
+  labs(x= "Date (2017-2018)", y = bquote('mol' ~NO[3]^{"-"}~ 'and' ~NO[2]^{"-"}~ 'L'^"-1")) +
   ggtitle("C")
 #N forcing y2 plot
 plot_N_Y2 <- ggplot(data = sol_all_Y2, aes(Date, N, color = source)) + 
@@ -852,7 +852,7 @@ plot_N_Y2 <- ggplot(data = sol_all_Y2, aes(Date, N, color = source)) +
   theme(legend.position="none") +
   theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
   ylim(0, 1e-05) +
-  labs(x= "Date (2018-2019)", y = bquote('mol' ~NO[3]^{"-"}~ 'L'^"-1")) +
+  labs(x= "Date (2018-2019)", y = bquote('mol' ~NO[3]^{"-"}~ 'and'~NO[2]^{"-"}~ 'L'^"-1")) +
   ggtitle("D")
 grid.arrange(plot_T_Y1, plot_T_Y2, plot_N, plot_N_Y2, ncol=2) #gridded plot
 
@@ -1323,12 +1323,13 @@ EC1983_18C_Nuptake_StM <- read.csv("EspinozaChapman1983_Nuptake_18C_StMargaretsB
 EC1983_9C_Nuptake_StM$N <- EC1983_9C_Nuptake_StM$ResidualNitrateConcentration
 EC1983_9C_Nuptake_StM$N <- round(EC1983_9C_Nuptake_StM$N, digits = 2)
 EC1983_9C_Nuptake_StM$N <- EC1983_9C_Nuptake_StM$N/1000000 #microM to M
-EC1983_9C_Nuptake_StM$NuptakeRate <- EC1983_9C_Nuptake_StM$NuptakeRate/1000000/w_EN #convert micro g N gDW–1 h–1 mol N gDW–1 h–1
+EC1983_9C_Nuptake_StM$NuptakeRate <- EC1983_9C_Nuptake_StM$NuptakeRate/1000000/w_EN #convert micro g N gDW–1 h–1 to mol N gDW–1 h–1
 #conversions 18C
 EC1983_18C_Nuptake_StM$N <- EC1983_18C_Nuptake_StM$ResidualNitrateConcentration
 EC1983_18C_Nuptake_StM$N <- round(EC1983_18C_Nuptake_StM$N, digits = 2)
 EC1983_18C_Nuptake_StM$N <- EC1983_18C_Nuptake_StM$N/1000000 #microM to M
 EC1983_18C_Nuptake_StM$NuptakeRate <- EC1983_18C_Nuptake_StM$NuptakeRate/1000000/w_EN
+
 #testing rounding
 sol_EspinozaChapman1983_N_9$N <- round(sol_EspinozaChapman1983_N_9$N*1000000, digits = 3)/1000000
 sol_EspinozaChapman1983_N_18$N <- round(sol_EspinozaChapman1983_N_18$N*1000000, digits = 3)/1000000
@@ -1344,15 +1345,15 @@ N_calibration <- ggplot() +
   theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
   theme(legend.position="none") +
   theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
-  labs(x= bquote('Nitrate Concentration (mol' ~NO[3]^{"-"}~ 'g DW'^"-1"*' h'^"-1"*')'), y = bquote('Nitrate uptake (mol' ~NO[3]^{"-"}~ 'g DW'^"-1"*' h'^"-1"*')')) +
+  labs(x= bquote('Nitrate Concentration (mol' ~NO[3]^{"-"}~ 'L'^"-1"*')'), y = bquote('N uptake (mol' ~NO[3]^{"-"}~ 'and' ~NO[2]^{"-"}~ 'g DW'^"-1"*' h'^"-1"*')')) +
   ggtitle('A')
 
 #Error calculations
 er9 <- merge(EC1983_9C_Nuptake_StM, sol_EspinozaChapman1983_N_9, all.x = TRUE)
-rmse(er9$NuptakeRate, er9$J_EN_A)
+rmse(er9$NuptakeRate, er9$J_EN_A) #3.683799e-07
 
 er18 <- merge(EC1983_18C_Nuptake_StM, sol_EspinozaChapman1983_N_18, all.x = TRUE)
-rmse(er18$NuptakeRate, er18$J_EN_A)
+rmse(er18$NuptakeRate, er18$J_EN_A) #2.606024e-07
 
   ######## Photosynthesis related ####
 #Johansson2002
@@ -1378,6 +1379,6 @@ sol_Johansson2002$I <- round(sol_Johansson2002$I, digits = 6)
 erPhoto <- merge(Johansson2002, sol_Johansson2002, all.x = TRUE)
 rmse(erPhoto$O2productionSHIFT, erPhoto$J_O)
 
-  ######## Combine calibration plot #######
+  ######## Combine calibration plot (Figure 5) #######
 #Figure 5
 grid.arrange(N_calibration, Photosynthesis_calibration, ncol=2)
