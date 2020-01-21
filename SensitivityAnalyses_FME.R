@@ -10,11 +10,11 @@ source("SolveR_R.R")
 #     X_N   X_C      V    E_N    E_C    P
 n_O <- matrix(
   + c(0.00, 1.00, 1.00, 0.00, 1.00, 1.00,  #C/C, equals 1 by definition
-      + 1.50, 0.50, 1.33, 0.00, 2.00, 1.80,  #H/C, these values show that we consider dry-mass
-      + 1.50, 2.50, 1.00, 3.00, 1.00, 0.50,  #O/C
+      + 0.00, 0.50, 1.33, 0.00, 2.00, 1.80,  #H/C, these values show that we consider dry-mass
+      + 3.00, 2.50, 1.00, 2.50, 1.00, 0.50,  #O/C
       + 1.00, 0.00, 0.04, 1.00, 0.00, 0.04), nrow=4, ncol=6, byrow = TRUE) #N/C
 #V is the C-mol structure of alginate (Alginic acid: (C6H8O6)n)
-#E_N is N03-
+#E_N is N03- and N02- averaged
 #E_C is glucose C6H12O6 (Laminarin: c18h32o16 and mannitol c6h14o6)
 #We aren't using the X_N, X_C, or P collumn here
 
@@ -33,23 +33,23 @@ w_O2 <- 32 #g/mol
 
 ##### Parameters compiled #####
 params_Lo <- c(#maximum volume-specific assimilation rate of N before temperature correction
-  JENAM = 2.5e-4, #1.2e-4, #mol N / molM_V / h
+  JENAM = 1.5e-4, #mol N / molM_V / h
   #maximum surface-specific assimilation rate of N
-  K_N = 2.667e-6, #molNO3 and NO2/L
+  K_N = 2.5e-6, #molNO3 and NO2/L
   #max volume-specific carbon dioxide assimilation rate
   JCO2M = 0.0075, #molC/molM_V/h
   #half saturation constant of C uptake
-  K_C = 4e-06, #mol DIC/L
+  K_C = 4e-7, #mol DIC/L
   #maximum volume-specific carbon assimilation rate
   JECAM = 0.282, #molC/molM_V/h
   #Photosynthetic unit density
-  rho_PSU = 0.9, #mol PSU/ mol Mv
+  rho_PSU = 0.5, #mol PSU/ mol Mv
   #binding probability of photons to a Light SU
-  b_I = 0.55, #dimensionless
+  b_I = 0.5, #dimensionless
   #Specific photon arrival cross section
   alpha = 1, #m^2 mol PSU–1
   #dissociation rate
-  k_I = 0.065, #molγ molPS–1 h–1
+  k_I = 0.075, #molγ molPS–1 h–1
   #Yield factor of C reserve to photon
   y_I_C = 10, #mol γ mol C-1
   #Yield factor of C reserve to CO2
@@ -66,9 +66,9 @@ params_Lo <- c(#maximum volume-specific assimilation rate of N before temperatur
   #yield of structure on C reserve (percent of C in structure)
   y_EC_V = 1, #mol C/mol M_V
   #specific maintenance costs requiring N before temp correction
-  JENM = 4.2e-07, #mol N/molM_V/h
+  JENM = 4e-6, #mol N/molM_V/h
   #specific maintenance costs requiring C before temp correction
-  JECM = 1e-07, #mol C/molM_V/h
+  JECM = 1e-6, #mol C/molM_V/h
   #Arrhenius temperature
   T_A = 6314.3, # K
   #Upper boundary of temperature tolerance
@@ -141,7 +141,7 @@ SenseFunc <- function(params_Lo){
       J_VM_C <- J_EC_M/y_EC_V  #rate of carbon flux of structure that pays for maintenance when the catabolic flux is not enough (1/h)
       J_VM_N <- J_EN_M/y_EN_V #rate of nitrogen flux of structure that pays for maintenance when the catabolic flux is not enough (1/h)
       J_VM <- c(J_VM_C, J_VM_N) #rate of maintenance costs paid from structure when the catabolic flux is not enough (allows r to be negative) (1/h)
-      r0 <- 1 # RL: I would not start the regression procedure with 0 (not sure why but it could have consequences in the procedure)
+      r0 <- 0.01 # RL: I would not start the regression procedure with 0 (not sure why but it could have consequences in the procedure)
       #The loop to solve for r (specific growth rate)
       Output_loop <- SolveR_R(m_E, k_E, J_EM, y_EV, J_VM, r0)
       
@@ -196,9 +196,9 @@ SenseFunc <- function(params_Lo){
   ####### State Inititial conditions ############
   #Initial conditions of state variables
   #these values are not coming from any field data or literature information, estimated
-  state_Lo <- c(m_EC = 0.1, #mol EC/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
-                m_EN = 0.03, #mol EN/molM_V #Reserve density of N reserve (initial mass of N reserve per intital mass of structure)
-                M_V = 0.00009) #molM_V #initial mass of structure
+  state_Lo <- c(m_EC = 0.002, #0.1, #mol C/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
+                m_EN = 0.01, #mol N/molM_V #Reserve density of N reserve (initial mass of N reserve per intital mass of structure)
+                M_V = 0.05/(w_V+0.01*w_EN+0.1*w_EC)) #molM_V #initial mass of structure
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #######Time step to run the model on#######
@@ -223,8 +223,131 @@ SenseFunc <- function(params_Lo){
   return(as.data.frame(ode(y = state_Lo, times = times_Lo_Sled1, func = rates_Lo, parms = params_Lo)))
 }
 
+SenseFunc2 <- function(params_Lo){
+  rates_Lo <- function(t, state, parameters) { #note that the time, state, and parameters in this function definition should always remain in this format regardless of how these pieces of info are labelled
+    
+    with(as.list(c(state, parameters)), { 
+      
+      #set-up equations (to calculate values necessary for the differential equations)
+      #Temperature correction:
+      C_T <- exp((T_A/T_0)-(T_A/T_field(t))) * (1+exp((T_AL/T_0)-(T_AL/T_L))+exp((T_AH/T_H)-(T_AH/T_0))) * ((1+exp((T_AL/T_field(t))-(T_AL/T_L))+exp((T_AH/T_H)-(T_AH/T_field(t))))^-1)
+      
+      J_EN_AM <-  JENAM * C_T #temperature correction of max assimilation rate of N
+      #Specific assimilation rate of N
+      J_EN_A <- J_EN_AM*(N_field(t)/(N_field(t)+K_N))  #J_EN_A units: mol N/molM_V/h
+      N <- N_field(t) #just to save N forcing output
+      
+      J_CO2_M <- JCO2M * C_T #Temperature correction max uptake rate of CO2 (photon capture not influenced by temp) J_CO2_M units: molC/molM_V/d
+      #Specific CO2 uptake flux
+      J_CO2 <- J_CO2_M*(CO_2/(CO_2+K_C)) #J_CO2 units: molC/molM_V/h
+      
+      #Specific relaxation rate
+      J_I <- (rho_PSU * I_field(t) * b_I * alpha)/(1+I_field(t) * b_I * alpha/(k_I * C_T)) #Unit: molγ molM_V–1 h–1
+      J_EC_AM <- JECAM * C_T #temperature correction max assimilation rate of C
+      #Specific carbon assimilation flux
+      J_EC_A <- ((1/J_EC_AM)+(1/(J_CO2/y_CO2_C))+(1/(J_I/y_I_C))-(1/((J_CO2/y_CO2_C)+(J_I/y_I_C))))^-1 #Units: mol C/mol M_V/h
+      I <- I_field(t) #just to save I forcing output
+      
+      #rate of oxygen production
+      J_O <- J_I * (M_V/W) * w_O2 * y_LO2 # g O2/g/h O2 production
+      
+      #Temperature corrections for the more internal parts of the model
+      k_E <- c(kE_C * C_T, kE_N * C_T) #reserve turnover rate #Unit: 1/h
+      J_EN_M <- JENM * C_T #volume specific maintenance cost paid by the N reserve #unit: molEN/molM_V/h
+      J_EC_M <-JECM * C_T #volume specific maintenance cost paid by the C reserve #unit: molEC/molM_V/h
+      
+      #########################
+      #setting up holder vectors for the SolveR_R function
+      #CARBON in first slot, NITROGEN in second
+      m_E <- c(m_EC, m_EN)      #density of both reserves (mol Ei/molM_V)
+      J_EM <- c(J_EC_M, J_EN_M) #volume specific maintenance cost paid by both reserves (molEi/molM_V/h)
+      y_EV <- c(y_EC_V, y_EN_V) #yield of structure on both reserves (mol Ei/mol M_V)
+      J_VM_C <- J_EC_M/y_EC_V  #rate of carbon flux of structure that pays for maintenance when the catabolic flux is not enough (1/h)
+      J_VM_N <- J_EN_M/y_EN_V #rate of nitrogen flux of structure that pays for maintenance when the catabolic flux is not enough (1/h)
+      J_VM <- c(J_VM_C, J_VM_N) #rate of maintenance costs paid from structure when the catabolic flux is not enough (allows r to be negative) (1/h)
+      r0 <- 0.01 # RL: I would not start the regression procedure with 0 (not sure why but it could have consequences in the procedure)
+      #The loop to solve for r (specific growth rate)
+      Output_loop <- SolveR_R(m_E, k_E, J_EM, y_EV, J_VM, r0)
+      
+      #Unpacking SolveR_R output
+      #RETURNS r, J_EC_loop (2), JEM_loop (2), JVM_loop (2), JER_loop (2), info
+      r <- Output_loop[1] #units should be 1/h??
+      J_EC_C <- Output_loop[2] #unit: mol EC/molM_V/h
+      J_EN_C <- Output_loop[3] #unit: mol EN/molM_V/h
+      J_EC_M <- Output_loop[4] #unit: mol EC/molM_V/h
+      J_EN_M <- Output_loop[5] #unit: mol EN/molM_V/h
+      J_VM_C <- Output_loop[6] #unit: 1/h
+      J_VM_N <- Output_loop[7] #unit: 1/h
+      J_VM <- J_VM_C+J_VM_N #unit: 1/h
+      J_EC_R <- Output_loop[8] #unit: mol EC/molM_V/h
+      J_EN_R <- Output_loop[9] #unit: mol EN/molM_V/h
+      info <- Output_loop[10] #1 if convergence, 0 if no convergence
+      
+      #Allocation to growth
+      #Specific growth flux for nitrogen 
+      J_EN_G <- J_EN_C-J_EN_M #unit: mol EN/molM_V/h
+      #Specific growth flux for carbon
+      J_EC_G <- J_EC_C-J_EC_M #unit: mol EC/molM_V/h
+      #this function keeps J_G from being NaN when growth is not occuring
+      #Necessary because Inf-Inf is NaN, but Inf-0 is Inf
+      RealNumbas <- function(x) {
+        if(is.infinite(x) == TRUE){
+          x <- 0 #replace infinite numbers with zero
+        }
+        return(x)
+      }
+      #Gross specific growth flux
+      J_G <- ((((J_EN_G/y_EN_V)^-1)+ ((J_EC_G/y_EC_V)^-1))-RealNumbas((J_EN_G/y_EN_V+J_EC_G/y_EC_V)^-1))^-1 #unit: 1/h
+      
+      #Biomass (structure mass+ C reserve mass + N reserve mass)
+      W <- (w_V+m_EN*w_EN+m_EC*w_EC)*M_V #unit: g (as long as the units of M_V are mol M_V)
+      #Allometic relationship between length (cm) and dry weight (g) from Gevaert (2001)
+      L_allometric <- (W/0.00387)^(1/1.469) #unit: cm
+      
+      #rates
+      #dynamics of the C reserve
+      dm_ECdt <- J_EC_A-J_EC_C+(kappa_Ei*J_EC_R)-(r*m_EC)  #unit: mol C/mol M_V/h
+      #dynamics of the N reserve
+      dm_ENdt <- J_EN_A-J_EN_C+(kappa_Ei*J_EN_R)-(r*m_EN) #unit: mol N/mol M_V/h
+      #dynamics of structural mass
+      dM_Vdt <- r*M_V  #units of M_V are mol M_V, so dMVdt units are mol MV/h
+      
+      
+      #output
+      return(list(c(dm_ECdt, dm_ENdt, dM_Vdt), r=r, W=W, C_T=C_T, I=I, N=N, J_CO2=J_CO2, J_I=J_I, J_EC_A=J_EC_A, J_EN_A=J_EN_A, J_EC_C=J_EC_C, J_EN_C=J_EN_C, J_EN_M=J_EN_M, J_EC_M=J_EC_M, J_EN_G=J_EN_G, J_EC_G=J_EC_G, J_G=J_G, J_VM=J_VM, J_EC_R=J_EC_R, J_EN_R=J_EN_R, CO_2=CO_2, L_allometric=L_allometric, J_O=J_O, info=info))
+    })
+  }
+  ####### State Inititial conditions ############
+  #Initial conditions of state variables
+  state_LoY2 <- c(m_EC = 0.01, #0.9 #mol C/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
+                  m_EN = 0.09, #mol N/molM_V #Reserve density of N reserve (initial mass of N reserve per intital mass of structure)
+                  M_V = 0.05/(w_V+0.09*w_EN+0.9*w_EC)) #molM_V #initial mass of structure
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #######Time step to run the model on#######
+  #(First number of time step, last number of time step, interval to step)
+  times_Lo_Sled1 <- seq(0, 4008, 1) #167 days stepped hourly
+  times_Lo_Sled2 <- seq(0, 3336, 1) #139 days stepped hourly
+  times_Lo_Dredge1 <- seq(0, 4128, 1) #172 days stepped hourly
+  times_Lo_Dredge2 <- seq(0, 3456, 1) #144 days stepped hourly
+  times_Lo_Wickford1 <- seq(0, 3312, 1) #138 days stepped hourly
+  times_Lo_RomePt1 <- seq(0, 4104, 1) #171 days stepped hourly
+  times_Lo_RomePt2 <- seq(0, 3264, 1) #136 days stepped hourly
+  
+  times_Y2_Sled1 <- seq(0, 3408, 1) #142 days stepped hourly
+  times_Y2_Sled2 <- seq(0, 2064, 1) #86 days stepped hourly
+  times_Y2_Dredge1 <- seq(0, 3408, 1) #142 days stepped hourly
+  times_Y2_Dredge2 <- seq(0, 2064, 1) #86 days stepped hourly
+  times_Y2_Wickford1 <- seq(0, 3720, 1) #155 days stepped hourly
+  times_Y2_RomePt1 <- seq(0, 3720, 1) #155 days stepped hourly
+  times_Y2_RomePt2 <- seq(0, 2208, 1) #92 days stepped hourly
+  
+  #########
+  return(as.data.frame(ode(y = state_LoY2, times = times_Lo_Sled1, func = rates_Lo, parms = params_Lo)))
+}
+
 #Sled1
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA2_Y1 <- read.csv("WaterSampleAnalysis2Y1.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water Q data
 WSA2_Y1$Date <- mdy(WSA2_Y1$Date) #convert dates
@@ -266,11 +389,11 @@ T_field <- approxfun(x = c(0:4008), y = c(AvgTempKbyhr_part1, fd, AvgTempKbyhr_p
 T_Sled1_Y1 <- T_field(0:4008) #saving the forcing this way for ease of later visualization
 #########
 Sled1_SA <- sensFun(SenseFunc, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
-plot(summary(Sled1_SA))
+#plot(summary(Sled1_SA))
 ############
 
 #Sled2
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA2_Y1 <- read.csv("WaterSampleAnalysis2Y1.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water Q data
 WSA2_Y1$Date <- mdy(WSA2_Y1$Date) #convert dates
@@ -311,11 +434,11 @@ T_field <- approxfun(x = c(0:3336), y = c(fd, AvgTempKbyhr$x), method = "linear"
 T_Sled2_Y1 <- T_field(0:3336) #for later ease in plotting the forcing
 #############
 Sled2_SA <- sensFun(SenseFunc, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
-plot(summary(Sled2_SA))
+#plot(summary(Sled2_SA))
 #################
 
 #Dredge1
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA2_Y1 <- read.csv("WaterSampleAnalysis2Y1.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA2_Y1$Date <- mdy(WSA2_Y1$Date) #convert dates
@@ -346,11 +469,11 @@ T_field <- approxfun(x = c(0:4128), y = AvgTempKbyhr$x, method = "linear", rule 
 T_Dredge1_Y1 <- T_field(0:4128) #for ease in later plotting of the forcing
 ##############
 Dredge1_SA <- sensFun(SenseFunc, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
-plot(summary(Dredge1_SA))
+#plot(summary(Dredge1_SA))
 ##############
 
 #Dredge2
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA2_Y1 <- read.csv("WaterSampleAnalysis2Y1.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA2_Y1$Date <- mdy(WSA2_Y1$Date) #convert dates
@@ -381,11 +504,11 @@ T_field <- approxfun(x = c(0:3456), y = c(AvgTempKbyhr_sub$x), method = "linear"
 T_Dredge2_Y1 <- T_field(0:3456) #for ease of later plotting the temperature forcing
 ##############
 Dredge2_SA <- sensFun(SenseFunc, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
-plot(summary(Dredge2_SA))
+#plot(summary(Dredge2_SA))
 ##############
 
 #Wickford1
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA2_Y1 <- read.csv("WaterSampleAnalysis2Y1.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA2_Y1$Date <- mdy(WSA2_Y1$Date) #convert dates
@@ -416,11 +539,11 @@ T_field <- approxfun(x = c(0:3312), y = c(fd$x, AvgTempKbyhr$x), method = "linea
 T_Wickford1_Y1 <- T_field(0:3312) #For ease of plotting the temp forcing
 ##############
 Wickford1_SA <- sensFun(SenseFunc, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
-plot(summary(Wickford1_SA))
+#plot(summary(Wickford1_SA))
 ##############
 
 #RomePt1
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA2_Y1 <- read.csv("WaterSampleAnalysis2Y1.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA2_Y1$Date <- mdy(WSA2_Y1$Date) #convert dates
@@ -453,11 +576,11 @@ T_field <- approxfun(x = c(0:4104), y = c(fd$x, AvgTempKbyhr$x), method = "linea
 T_RomePt1_Y1 <- T_field(0:4104) #for ease in plotting the temperature forcing
 ##############
 RomePt1_SA <- sensFun(SenseFunc, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
-plot(summary(RomePt1_SA))
+#plot(summary(RomePt1_SA))
 ##############
 
 #RomePt2
-W <- 0.0039 #1.6545 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA2_Y1 <- read.csv("WaterSampleAnalysis2Y1.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA2_Y1$Date <- mdy(WSA2_Y1$Date) #convert dates
@@ -488,11 +611,11 @@ T_field <- approxfun(x = c(0:3264), y = c(AvgTempKbyhr$x), method = "linear", ru
 T_RomePt2_Y1 <- T_field(0:3264) #for ease in later plotting
 ##############
 RomePt2_SA <- sensFun(SenseFunc, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
-plot(summary(RomePt2_SA))
+#plot(summary(RomePt2_SA))
 ##############
 
 #Sled1_Y2
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
@@ -520,12 +643,12 @@ fd <- rep(285, 25) #small section of replacement
 T_field <- approxfun(x = c(0:3408), y = c(AvgTempKbyhr$x, fd), method = "linear", rule = 2) #the temp forcing function
 T_Sled1_Y2 <- T_field(0:3408) #for ease in plotting the temperature forcing
 ##############
-Sled1_Y2_SA <- sensFun(SenseFunc, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
-plot(summary(Sled1_Y2_SA))
+Sled1_Y2_SA <- sensFun(SenseFunc2, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
+#plot(summary(Sled1_Y2_SA))
 ##############
 
 #Sled2_Y2
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
@@ -554,12 +677,12 @@ fd <- rep(285, 25) #small data replacement
 T_field <- approxfun(x = c(0:2064), y = c(AvgTempKbyhr$x, fd), method = "linear", rule = 2) #the temp forcing function
 T_Sled2_Y2 <- T_field(0:2064) #for ease in later plotting
 ##############
-Sled2_Y2_SA <- sensFun(SenseFunc, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
-plot(summary(Sled2_Y2_SA))
+Sled2_Y2_SA <- sensFun(SenseFunc2, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
+#plot(summary(Sled2_Y2_SA))
 ##############
 
 #Dredge1_Y2
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
@@ -587,12 +710,12 @@ fd <- rep(285, 26) #small amount of replacement data
 T_field <- approxfun(x = c(0:3408), y = c(AvgTempKbyhr$x, fd), method = "linear", rule = 2) #the temp forcing function
 T_Dredge1_Y2 <- T_field(0:3408) #for ease of plotting
 ##############
-Dredge1_Y2_SA <- sensFun(SenseFunc, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
-plot(summary(Dredge1_Y2_SA))
+Dredge1_Y2_SA <- sensFun(SenseFunc2, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
+#plot(summary(Dredge1_Y2_SA))
 ##############
 
 #Dredge2_Y2
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
@@ -620,12 +743,12 @@ fd <- rep(285, 25) #estimation to fill in gap in data
 T_field <- approxfun(x = c(0:2064), y = c(AvgTempKbyhr$x, fd), method = "linear", rule = 2) #the temp forcing function
 T_Dredge2_Y2 <- T_field(0:2064) #for ease in plotting
 ##############
-Dredge2_Y2_SA <- sensFun(SenseFunc, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
-plot(summary(Dredge2_Y2_SA))
+Dredge2_Y2_SA <- sensFun(SenseFunc2, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
+#plot(summary(Dredge2_Y2_SA))
 ##############
 
 #Wickford1_Y2
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
@@ -655,12 +778,12 @@ fd2 <- rep(287, 4) #second small section of replacement data
 T_field <- approxfun(x = c(0:3720), y = c(fd, AvgTempKbyhr_sub$x, fd2), method = "linear", rule = 2) #the temp forcing function
 T_Wickford1_Y2 <- T_field(0:3720) #for ease of plotting
 ##############
-Wickford1_Y2_SA <- sensFun(SenseFunc, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
-plot(summary(Wickford1_Y2_SA))
+Wickford1_Y2_SA <- sensFun(SenseFunc2, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
+#plot(summary(Wickford1_Y2_SA))
 ##############
 
 #RomePt1_Y2
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
@@ -697,12 +820,12 @@ fd2 <- rep(287, 28)
 T_field <- approxfun(x = c(0:3720), y = c(fd, AvgTempKbyhr_sub$x, AvgTempKbyhr_W$x, fd2), method = "linear", rule = 2) #the temp forcing function
 T_RomePt1_Y2 <- T_field(0:3720) #for ease of plotting
 ##############
-RomePt1_Y2_SA <- sensFun(SenseFunc, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
-plot(summary(RomePt1_Y2_SA))
+RomePt1_Y2_SA <- sensFun(SenseFunc2, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
+#plot(summary(RomePt1_Y2_SA))
 ##############
 
 #RomePt2_Y2
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
@@ -739,13 +862,13 @@ fd2 <- rep(287, 28)
 T_field <- approxfun(x = c(0:2208), y = c(AvgTempKbyhr_sub$x, AvgTempKbyhr_W$x, fd2), method = "linear", rule = 2) #the temp forcing function
 T_RomePt2_Y2 <- T_field(0:2208) #for ease in plotting
 ##############
-RomePt2_Y2_SA <- sensFun(SenseFunc, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
-plot(summary(RomePt2_Y2_SA))
+RomePt2_Y2_SA <- sensFun(SenseFunc2, params_Lo, sensvar = c("m_EC", "m_EN", "M_V"))
+#plot(summary(RomePt2_Y2_SA))
 ##############
 
 Compile_SA <- rbind(Sled1_SA, Sled2_SA, Dredge1_SA, Dredge2_SA, Wickford1_SA, RomePt1_SA, RomePt2_SA, Sled1_Y2_SA, Sled2_Y2_SA, Dredge1_Y2_SA, Dredge2_Y2_SA, Wickford1_Y2_SA, RomePt1_Y2_SA, RomePt2_Y2_SA)
 summary(Compile_SA)
-plot(summary(Compile_SA))
+#plot(summary(Compile_SA))
 SA_SUM <- summary(Compile_SA)
 
 SA_SUM[ "Parameter" ] <- rownames(SA_SUM)
@@ -764,8 +887,8 @@ SA_SUM$Parameter[SA_SUM$Parameter=="JECM"] <- "J_EC_M"
 #SA_SUM$Parameter[SA_SUM$Parameter=="JECAM"] <- "Max. volume spec. C assimilation"
 #SA_SUM$Parameter[SA_SUM$Parameter=="rho_PSU"] <- "Photosynthetic unit (PSU) density"
 #SA_SUM$Parameter[SA_SUM$Parameter=="b_I"] <- "Binding probability of a photon to a free light SU"
-#SA_SUM$Parameter[SA_SUM$Parameter=="k_I"] <- "Dissociation rate of releasing ATP and NADPH+"
-#SA_SUM$Parameter[SA_SUM$Parameter=="y_I_C"] <- "Yield factor of C reserve to NADPH"
+#SA_SUM$Parameter[SA_SUM$Parameter=="k_I"] <- "Dissociation rate"
+#SA_SUM$Parameter[SA_SUM$Parameter=="y_I_C"] <- "Yield factor of C reserve to photons"
 #SA_SUM$Parameter[SA_SUM$Parameter=="y_CO2_C"] <- "Yield factor of C reserve to CO2"
 #SA_SUM$Parameter[SA_SUM$Parameter=="kE_C"] <- "C reserve turnover rate"
 #SA_SUM$Parameter[SA_SUM$Parameter=="kE_N"] <- "N reserve turnover rate"
@@ -787,6 +910,7 @@ SA_SUM$Parameter <- factor(SA_SUM$Parameter, as.character(SA_SUM$Parameter)) #to
 ggplot(data = SA_SUM) +
   geom_point(mapping = aes(x = L1, y = Parameter), size = 3) +
   geom_abline(mapping = aes(slope = 0, intercept = 0)) +
+  xlim(0, 8000) +
   theme_bw() +
   theme(axis.line = element_line(colour = "black"), panel.grid.minor = element_blank(), panel.border = element_blank()) +
   theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +

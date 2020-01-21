@@ -109,11 +109,11 @@ params_Lo <- c(#maximum volume-specific assimilation rate of N before temperatur
 ####### State Inititial conditions ############
 #Initial conditions of state variables
 #these values are not coming from any field data or literature information, estimated
-state_Lo <- c(m_EC = 0.1, #mol C/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
+state_Lo <- c(m_EC = 0.002, #0.1, #mol C/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
               m_EN = 0.01, #mol N/molM_V #Reserve density of N reserve (initial mass of N reserve per intital mass of structure)
               M_V = 0.05/(w_V+0.01*w_EN+0.1*w_EC)) #molM_V #initial mass of structure
 
-state_LoY2 <- c(m_EC = 0.9, #mol C/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
+state_LoY2 <- c(m_EC = 0.01, #0.9 #mol C/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
               m_EN = 0.09, #mol N/molM_V #Reserve density of N reserve (initial mass of N reserve per intital mass of structure)
               M_V = 0.05/(w_V+0.09*w_EN+0.9*w_EC)) #molM_V #initial mass of structure
 
@@ -996,6 +996,28 @@ plot_J_I_PJ_Y2 <- ggplot() +
 grid.arrange(plot_J_I_NB, plot_J_I_PJ, plot_J_I_NB_Y2, plot_J_I_PJ_Y2, ncol=2)
 
 #Figure 7
+plot_J_EC_R_PJ <- ggplot() +
+  geom_point(data = sol_all[sol_all$source == "Point Judith Pond S 1",], aes(Date, J_EC_R, color = source)) +
+  geom_point(data = sol_all[sol_all$source == "Point Judith Pond N 1",], aes(Date, J_EC_R, color = source)) +
+  scale_color_grey() +
+  xlim(as.POSIXct(c("2017-10-30 23:00:00", "2018-06-01 23:00:00"))) +
+  theme_bw() +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
+  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
+  theme(legend.position="none") + 
+  labs(x= "Date (2017-2018)", y = bquote('Rejected C (mol C mol Mv'^"-1"*' h'^"-1"*')')) +
+  ggtitle("A)")
+plot_J_EN_R_PJ <- ggplot() +
+  geom_point(data = sol_all[sol_all$source == "Point Judith Pond S 1",], aes(Date, J_EN_R, color = source)) +
+  geom_point(data = sol_all[sol_all$source == "Point Judith Pond N 1",], aes(Date, J_EN_R, color = source)) +
+  scale_color_grey() +
+  xlim(as.POSIXct(c("2017-10-30 23:00:00", "2018-06-01 23:00:00"))) +
+  theme_bw() +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
+  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
+  theme(legend.position="none") + 
+  labs(x= "Date (2017-2018)", y = bquote('Rejected N (mol N mol Mv'^"-1"*' h'^"-1"*')')) +
+  ggtitle("B)")
 plot_J_EC_R_PJ_Y2 <- ggplot() +
   geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond S 1",], aes(Date, J_EC_R, color = source)) +
   geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond N 1",], aes(Date, J_EC_R, color = source)) +
@@ -1006,7 +1028,7 @@ plot_J_EC_R_PJ_Y2 <- ggplot() +
   theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
   theme(legend.position="none") + 
   labs(x= "Date (2018-2019)", y = bquote('Rejected C (mol C mol Mv'^"-1"*' h'^"-1"*')')) +
-  ggtitle("A)")
+  ggtitle("C)")
 plot_J_EN_R_PJ_Y2 <- ggplot() +
   geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond S 1",], aes(Date, J_EN_R, color = source)) +
   geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond N 1",], aes(Date, J_EN_R, color = source)) +
@@ -1017,8 +1039,8 @@ plot_J_EN_R_PJ_Y2 <- ggplot() +
   theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
   theme(legend.position="none") + 
   labs(x= "Date (2018-2019)", y = bquote('Rejected N (mol N mol Mv'^"-1"*' h'^"-1"*')')) +
-  ggtitle("B)")
-grid.arrange(plot_J_EC_R_PJ_Y2, plot_J_EN_R_PJ_Y2, ncol=2)
+  ggtitle("D)")
+grid.arrange(plot_J_EC_R_PJ, plot_J_EN_R_PJ, plot_J_EC_R_PJ_Y2, plot_J_EN_R_PJ_Y2, ncol=2)
 
 #Figure 8
 plot_J_I_PJ_Y2 <- ggplot() +
@@ -1071,7 +1093,7 @@ NBN1_rmse <- round(NBN1_rmse, 2)()
   
 NBN1_meandat$Date <- as.POSIXct(NBN1_meandat$Date)
 NBN1 <- ggplot() + 
-  geom_point(data = NBN1_meandat, aes(Date, mean_length)) +
+  geom_point(data = NBN1_meandat, aes(Date, mean_length), size = 2) +
   geom_errorbar(NBN1_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all[sol_all$source == "Narragansett Bay N 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2018-04-24 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", NBN1_rmse)) +
@@ -1102,7 +1124,7 @@ erNBS2 <- merge(NBS2_meandat_sub, sol_all[sol_all$source == "Narragansett Bay S 
 NBS2_rmse <- rmse(erNBS2$mean_length, erNBS2$L_allometric)
 
 NBS1_2 <- ggplot() + 
-  geom_point(data = NBS1_meandat, aes(Date, mean_length)) +
+  geom_point(data = NBS1_meandat, aes(Date, mean_length), size = 2) +
   geom_errorbar(NBS1_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all[sol_all$source == "Narragansett Bay S 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2018-04-24 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", NBS1_rmse)) +
@@ -1137,7 +1159,7 @@ erPJS2 <- merge(PJS2_meandat_sub, sol_all[sol_all$source == "Point Judith Pond S
 PJS2_rmse <- rmse(erPJS2$mean_length, erPJS2$L_allometric)
 
 PJS1_2 <- ggplot() + 
-  geom_point(data = PJS1_meandat, aes(Date, mean_length)) +
+  geom_point(data = PJS1_meandat, aes(Date, mean_length), size = 2) +
   geom_errorbar(PJS1_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all[sol_all$source == "Point Judith Pond S 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2018-04-01 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", PJS1_rmse)) +
@@ -1173,7 +1195,7 @@ PJN2_rmse <- rmse(erPJN2$mean_length, erPJN2$L_allometric)
 
 
 PJN1_2 <- ggplot() + 
-  geom_point(data = PJN1_meandat, aes(Date, mean_length)) +
+  geom_point(data = PJN1_meandat, aes(Date, mean_length), size = 2) +
   geom_errorbar(PJN1_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all[sol_all$source == "Point Judith Pond N 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2018-04-24 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", PJN1_rmse)) +
@@ -1200,7 +1222,7 @@ erNBN1_Y2 <- merge(NBN1_Y2_meandat_sub, sol_all_Y2[sol_all_Y2$source == "Narraga
 NBN1_Y2_rmse <- rmse(erNBN1_Y2$mean_length, erNBN1_Y2$L_allometric)
 
 NBN1_Y2 <- ggplot() + 
-  geom_point(data = NBN1_Y2_meandat, aes(Date, mean_length)) +
+  geom_point(data = NBN1_Y2_meandat, aes(Date, mean_length), size = 2) +
   geom_errorbar(NBN1_Y2_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all_Y2[sol_all_Y2$source == "Narragansett Bay N 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2019-05-30 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", NBN1_Y2_rmse)) +
@@ -1231,7 +1253,7 @@ erNBS2_Y2 <- merge(NBS2_Y2_meandat_sub, sol_all_Y2[sol_all_Y2$source == "Narraga
 NBS2_Y2_rmse <- rmse(erNBS2_Y2$mean_length, erNBS2_Y2$L_allometric)
 
 NBS1_2_Y2 <- ggplot() + 
-  geom_point(data = NBS1_Y2_meandat, aes(Date, mean_length)) +
+  geom_point(data = NBS1_Y2_meandat, aes(Date, mean_length), size = 2) +
   geom_errorbar(NBS1_Y2_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all_Y2[sol_all_Y2$source == "Narragansett Bay S 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2019-05-30 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", NBS1_Y2_rmse)) +
@@ -1266,7 +1288,7 @@ erPJS2_Y2 <- merge(PJS2_Y2_meandat_sub, sol_all_Y2[sol_all_Y2$source == "Point J
 PJS2_Y2_rmse <- rmse(erPJS2_Y2$mean_length, erPJS2_Y2$L_allometric)
 
 PJS1_2_Y2 <- ggplot() + 
-  geom_point(data = PJS1_Y2_meandat, aes(Date, mean_length)) +
+  geom_point(data = PJS1_Y2_meandat, aes(Date, mean_length), size = 2) +
   geom_errorbar(PJS1_Y2_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond S 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2019-05-30 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", PJS1_Y2_rmse)) +
@@ -1301,7 +1323,7 @@ erPJN2_Y2 <- merge(PJN2_Y2_meandat_sub, sol_all_Y2[sol_all_Y2$source == "Point J
 PJN2_Y2_rmse <- rmse(erPJN2_Y2$mean_length, erPJN2_Y2$L_allometric)
 
 PJN1_2_Y2 <- ggplot() + 
-  geom_point(data = PJN1_Y2_meandat, aes(Date, mean_length)) +
+  geom_point(data = PJN1_Y2_meandat, aes(Date, mean_length), size = 2) +
   geom_errorbar(PJN1_Y2_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond N 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2019-05-30 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", PJN1_Y2_rmse)) +
