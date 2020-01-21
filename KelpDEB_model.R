@@ -51,7 +51,7 @@ rates_Lo <- function(t, state, parameters) {
     J_VM_C <- J_EC_M/y_EC_V  #rate of carbon flux of structure that pays for maintenance when the catabolic flux is not enough (1/h)
     J_VM_N <- J_EN_M/y_EN_V #rate of nitrogen flux of structure that pays for maintenance when the catabolic flux is not enough (1/h)
     J_VM <- c(J_VM_C, J_VM_N) #rate of maintenance costs paid from structure when the catabolic flux is not enough (allows r to be negative) (1/h)
-    r0 <- 1 # RL: I would not start the regression procedure with 0 (not sure why but it could have consequences in the procedure)
+    r0 <- 0.01 # RL: I would not start the regression procedure with 0 (not sure why but it could have consequences in the procedure)
     #The loop to solve for r (specific growth rate)
     Output_loop <- SolveR_R(m_E, k_E, J_EM, y_EV, J_VM, r0)
     
@@ -88,7 +88,7 @@ rates_Lo <- function(t, state, parameters) {
     #Biomass (structure mass+ C reserve mass + N reserve mass)
     W <- (w_V+m_EN*w_EN+m_EC*w_EC)*M_V #unit: g (as long as the units of M_V are mol M_V)
     #Allometic relationship between length (cm) and dry weight (g) from Gevaert (2001)
-    L_allometric <- (W/0.0004)^(1/1.8311) #(W/0.00387)^(1/1.469) #unit: cm
+    L_allometric <- (W/0.00387)^(1/1.469) #unit: cm
       
     #rates
     #dynamics of the C reserve
