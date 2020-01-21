@@ -21,8 +21,8 @@ while(f^2 > 1e-15 && i < n) { #test norm
   J_EC_loop_N <- m_E[2] * (k_E[2] - r) #units: mol i/molM_V/h
   J_EC_loop <- c(J_EC_loop_C, J_EC_loop_N)
   #Is the catabolic flux large enough to fill maintenance requirements
-  JEM_loop_C <- max(1e-6, min(J_EM[1], J_EC_loop[1])) #unit: molEC/molM_V/h or mol C/molM_V/h depending on what quanity is smaller
-  JEM_loop_N <- max(1e-6, min(J_EM[2], J_EC_loop[2])) #unit: molEN/molM_V/h or mol N/molM_V/h depending on what quanity is smaller
+  JEM_loop_C <- max(1e-8, min(J_EM[1], J_EC_loop[1])) #unit: molEC/molM_V/h or mol C/molM_V/h depending on what quanity is smaller
+  JEM_loop_N <- max(1e-8, min(J_EM[2], J_EC_loop[2])) #unit: molEN/molM_V/h or mol N/molM_V/h depending on what quanity is smaller
   JEM_loop <- c(JEM_loop_C, JEM_loop_N)
   #relevant if structure is required to fill maintenance requirements
   JVM_loop <- J_VM * (1 - JEM_loop / J_EM) #unit: 1/h

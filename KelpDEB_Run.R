@@ -34,11 +34,11 @@ source("Photosynthesis_Calibration.R")
 #     X_N   X_C      V    E_N    E_C    P
 n_O <- matrix(
     + c(0.00, 1.00, 1.00, 0.00, 1.00, 1.00,  #C/C, equals 1 by definition
-      + 1.50, 0.50, 1.33, 0.00, 2.00, 1.80,  #H/C, these values show that we consider dry-mass
-      + 1.50, 2.50, 1.00, 3.00, 1.00, 0.50,  #O/C
+      + 0.00, 0.50, 1.33, 0.00, 2.00, 1.80,  #H/C, these values show that we consider dry-mass
+      + 3.00, 2.50, 1.00, 2.50, 1.00, 0.50,  #O/C
       + 1.00, 0.00, 0.04, 1.00, 0.00, 0.04), nrow=4, ncol=6, byrow = TRUE) #N/C
 #V is the C-mol structure of alginate (Alginic acid: (C6H8O6)n)
-#E_N is N03-
+#E_N is N03- and N02- averaged
 #E_C is glucose C6H12O6 (Laminarin: c18h32o16 and mannitol c6h14o6)
 #We aren't using the X_N, X_C, or P collumn here
 
@@ -57,15 +57,15 @@ w_O2 <- 32 #g/mol
 
 ##### Parameters compiled #####
 params_Lo <- c(#maximum volume-specific assimilation rate of N before temperature correction
-               JENAM = 2.5e-4, #1.2e-4, #mol N / molM_V / h
+               JENAM = 3e-4, #1.5e-4, #mol N / molM_V / h
                #maximum surface-specific assimilation rate of N
                K_N = 2.667e-6, #molNO3 and NO2/L
                #max volume-specific carbon dioxide assimilation rate
-               JCO2M = 0.0075, #molC/molM_V/h
+               JCO2M = 0.075, #0.0075, #molC/molM_V/h
                #half saturation constant of C uptake
                K_C = 4e-06, #mol DIC/L
                #maximum volume-specific carbon assimilation rate
-               JECAM = 0.282, #molC/molM_V/h
+               JECAM = 0.7, #0.282 #molC/molM_V/h
                #Photosynthetic unit density
                rho_PSU = 0.9, #mol PSU/ mol Mv
                #binding probability of photons to a Light SU
@@ -81,7 +81,7 @@ params_Lo <- c(#maximum volume-specific assimilation rate of N before temperatur
                #Yield factor of photon to O2
                y_LO2 = 0.125, #molO2 molγ –1
                #reserve turnover
-               kE_C = 0.05,
+               kE_C = 0.09, #0.05,
                kE_N = 0.01, 
                #fraction of rejection flux from growth SU incorporated back into i-reserve
                kappa_Ei = 0.9, #dimensionless
@@ -109,13 +109,19 @@ params_Lo <- c(#maximum volume-specific assimilation rate of N before temperatur
 ####### State Inititial conditions ############
 #Initial conditions of state variables
 #these values are not coming from any field data or literature information, estimated
-state_Lo <- c(m_EC = 0.9, #mol C/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
-              m_EN = 0.03, #mol N/molM_V #Reserve density of N reserve (initial mass of N reserve per intital mass of structure)
-              M_V = 4.503984e-05) #molM_V #initial mass of structure
-#0.0039 = (29.89+0.9*62+0.03*30)*M_V
-#0.4
-#4.503984e-05
-#8.914286e-05
+state_Lo <- c(m_EC = 0.03, #mol C/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
+              m_EN = 0.02, #mol N/molM_V #Reserve density of N reserve (initial mass of N reserve per intital mass of structure)
+              M_V = 1.255099e-05) #molM_V #initial mass of structure
+#0.0004 = (29.89+0.02*54+0.03*30)*1.255099e-05
+state_LoY2 <- c(m_EC = 0.03, #mol C/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
+              m_EN = 0.02, #mol N/molM_V #Reserve density of N reserve (initial mass of N reserve per intital mass of structure)
+              M_V = 4.392846e-05) #molM_V #initial mass of structure
+#0.0014 = (29.89+0.02*54+0.03*30)*4.392846e-05
+state_Johansson <- c(m_EC = 0.9, #mol C/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
+                     m_EN = 0.04, #mol N/molM_V #Reserve density of N reserve (initial mass of N reserve per intital mass of structure)
+                     M_V = 0.0006274313) #molM_V #initial mass of structure
+
+#0.05 = (29.89+0.9*54+0.04*30)*M_V
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #######Time step to run the model on#######
@@ -156,7 +162,7 @@ NOAA_Irradiance$PAR <- NOAA_Irradiance$DownMinusUp*0.43*4.56*exp(-0.46*1)*3600*1
 #YEAR 1
 #
 #Setting up the forcing functions with field data for Sled line 1
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.0004 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA2_Y1 <- read.csv("WaterSampleAnalysis2Y1.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water Q data
 WSA2_Y1$Date <- mdy(WSA2_Y1$Date) #convert dates
@@ -203,7 +209,7 @@ sol_Sled1 <- ode(y = state_Lo, t = times_Lo_Sled1, func = rates_Lo, parms = para
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Setting up the forcing functions with field data for Sled line 2
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.0004 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA2_Y1 <- read.csv("WaterSampleAnalysis2Y1.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water Q data
 WSA2_Y1$Date <- mdy(WSA2_Y1$Date) #convert dates
@@ -249,7 +255,7 @@ sol_Sled2 <- ode(y = state_Lo, t = times_Lo_Sled2, func = rates_Lo, parms = para
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Setting up the forcing functions with field data for Dredge line 1
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.0004 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA2_Y1 <- read.csv("WaterSampleAnalysis2Y1.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA2_Y1$Date <- mdy(WSA2_Y1$Date) #convert dates
@@ -285,7 +291,7 @@ sol_Dredge1 <- ode(y = state_Lo, t = times_Lo_Dredge1, func = rates_Lo, parms = 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Setting up the forcing functions with field data for Dredge line 2
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.0004 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA2_Y1 <- read.csv("WaterSampleAnalysis2Y1.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA2_Y1$Date <- mdy(WSA2_Y1$Date) #convert dates
@@ -321,7 +327,7 @@ sol_Dredge2 <- ode(y = state_Lo, t = times_Lo_Dredge2, func = rates_Lo, parms = 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Setting up the forcing functions with field data for Wickford line 1
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.0004 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA2_Y1 <- read.csv("WaterSampleAnalysis2Y1.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA2_Y1$Date <- mdy(WSA2_Y1$Date) #convert dates
@@ -357,7 +363,7 @@ sol_Wickford1 <- ode(y = state_Lo, t = times_Lo_Wickford1, func = rates_Lo, parm
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Setting up the forcing functions with field data for Rome Point line 1
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.0004 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA2_Y1 <- read.csv("WaterSampleAnalysis2Y1.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA2_Y1$Date <- mdy(WSA2_Y1$Date) #convert dates
@@ -395,7 +401,7 @@ sol_RomePt1 <- ode(y = state_Lo, t = times_Lo_RomePt1, func = rates_Lo, parms = 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Setting up the forcing functions with field data for Rome Point line 2
-W <- 0.0039 #1.6545 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.0004 #1.6545 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA2_Y1 <- read.csv("WaterSampleAnalysis2Y1.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA2_Y1$Date <- mdy(WSA2_Y1$Date) #convert dates
@@ -433,7 +439,7 @@ sol_RomePt2 <- ode(y = state_Lo, t = times_Lo_RomePt2, func = rates_Lo, parms = 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #YEAR 2 Kelp data
 #Setting up the forcing functions with field data for Sled line 1 (y2)
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.0014 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
@@ -463,11 +469,11 @@ T_Sled1_Y2 <- T_field(0:3408) #for ease in plotting the temperature forcing
 #####################################################################################################################
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Model run (the differential equation solver)
-sol_Sled1_Y2 <- ode(y = state_Lo, t = times_Y2_Sled1, func = rates_Lo, parms = params_Lo)
+sol_Sled1_Y2 <- ode(y = state_LoY2, t = times_Y2_Sled1, func = rates_Lo, parms = params_Lo)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Setting up the forcing functions with field data for Sled line 2 (y2)
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.0014 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
@@ -498,11 +504,11 @@ T_Sled2_Y2 <- T_field(0:2064) #for ease in later plotting
 #####################################################################################################################
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Model run (the differential equation solver)
-sol_Sled2_Y2 <- ode(y = state_Lo, t = times_Y2_Sled2, func = rates_Lo, parms = params_Lo)
+sol_Sled2_Y2 <- ode(y = state_LoY2, t = times_Y2_Sled2, func = rates_Lo, parms = params_Lo)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Setting up the forcing functions with field data for Dredge line 1 (y2)
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.0014 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
@@ -532,11 +538,11 @@ T_Dredge1_Y2 <- T_field(0:3408) #for ease of plotting
 #####################################################################################################################
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Model run (the differential equation solver)
-sol_Dredge1_Y2 <- ode(y = state_Lo, t = times_Y2_Dredge1, func = rates_Lo, parms = params_Lo)
+sol_Dredge1_Y2 <- ode(y = state_LoY2, t = times_Y2_Dredge1, func = rates_Lo, parms = params_Lo)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Setting up the forcing functions with field data for Dredge line 2 (y2)
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.0014 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
@@ -566,11 +572,11 @@ T_Dredge2_Y2 <- T_field(0:2064) #for ease in plotting
 #####################################################################################################################
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Model run (the differential equation solver)
-sol_Dredge2_Y2 <- ode(y = state_Lo, t = times_Y2_Dredge2, func = rates_Lo, parms = params_Lo)
+sol_Dredge2_Y2 <- ode(y = state_LoY2, t = times_Y2_Dredge2, func = rates_Lo, parms = params_Lo)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Setting up the forcing functions with field data for Wickford line 1 (y2)
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.0014 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
@@ -602,11 +608,11 @@ T_Wickford1_Y2 <- T_field(0:3720) #for ease of plotting
 #####################################################################################################################
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Model run (the differential equation solver)
-sol_Wickford1_Y2 <- ode(y = state_Lo, t = times_Y2_Wickford1, func = rates_Lo, parms = params_Lo)
+sol_Wickford1_Y2 <- ode(y = state_LoY2, t = times_Y2_Wickford1, func = rates_Lo, parms = params_Lo)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Setting up the forcing functions with field data for Rome Point line 1 (y2)
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.0014 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
@@ -645,11 +651,11 @@ T_RomePt1_Y2 <- T_field(0:3720) #for ease of plotting
 #####################################################################################################################
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Model run (the differential equation solver)
-sol_RomePt1_Y2 <- ode(y = state_Lo, t = times_Y2_RomePt1, func = rates_Lo, parms = params_Lo)
+sol_RomePt1_Y2 <- ode(y = state_LoY2, t = times_Y2_RomePt1, func = rates_Lo, parms = params_Lo)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Setting up the forcing functions with field data for Rome Point line 2 (y2)
-W <- 0.0039 #inital biomass for conversions (cannot put in initial conditions)
+W <- 0.0014 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
@@ -688,7 +694,7 @@ T_RomePt2_Y2 <- T_field(0:2208) #for ease in plotting
 #####################################################################################################################
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #Model run (the differential equation solver)
-sol_RomePt2_Y2 <- ode(y = state_Lo, t = times_Y2_RomePt2, func = rates_Lo, parms = params_Lo)
+sol_RomePt2_Y2 <- ode(y = state_LoY2, t = times_Y2_RomePt2, func = rates_Lo, parms = params_Lo)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -726,7 +732,7 @@ T_dat <- 14 #C (maintained for entire experiment
 ###### I forcing set-up #####
 I_max <- 3233205 #micromol photons m-2 h-1
 ##############
-sol_Johansson2002 <- Photosynthesis(params_Lo, state_Lo, w_V, w_EN, w_EC, w_O2, T_dat, I_max) #function from Photosynthesis_Calibration.R
+sol_Johansson2002 <- Photosynthesis(params_Lo, state_Johansson, w_V, w_EN, w_EC, w_O2, T_dat, I_max) #function from Photosynthesis_Calibration.R
 sol_Johansson2002 <- as.data.frame(sol_Johansson2002) #conversion to dataframe for later use
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -811,7 +817,7 @@ sol_RomePt2_Y2$source  <- "Narragansett Bay S 2"
 #combine all Y2 field data into one dataframe
 sol_all_Y2 <- rbind(sol_Dredge1_Y2, sol_Dredge2_Y2, sol_RomePt1_Y2, sol_RomePt2_Y2, sol_Sled1_Y2, sol_Sled2_Y2, sol_Wickford1_Y2)
 
-##### Model Plots #####
+##### Model Plots (Fig 3, 6, 7, 8) #####
 #Figure 6
 #Temperature y1 plot
 plot_T_Y1 <- ggplot(data = sol_all, aes(Date, Temp_C, color = source)) + 

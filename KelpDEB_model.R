@@ -88,8 +88,8 @@ rates_Lo <- function(t, state, parameters) {
     #Biomass (structure mass+ C reserve mass + N reserve mass)
     W <- (w_V+m_EN*w_EN+m_EC*w_EC)*M_V #unit: g (as long as the units of M_V are mol M_V)
     #Allometic relationship between length (cm) and dry weight (g) from Gevaert (2001)
-    L_allometric <- (W/0.00387)^(1/1.469) #unit: cm
-
+    L_allometric <- (W/0.0004)^(1/1.8311) #(W/0.00387)^(1/1.469) #unit: cm
+      
     #rates
     #dynamics of the C reserve
     dm_ECdt <- J_EC_A-J_EC_C+(kappa_Ei*J_EC_R)-(r*m_EC)  #unit: mol C/mol M_V/h
