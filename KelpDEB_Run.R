@@ -111,11 +111,11 @@ params_Lo <- c(#maximum volume-specific assimilation rate of N before temperatur
 #these values are not coming from any field data or literature information, estimated
 state_Lo <- c(m_EC = 0.002, #0.1, #mol C/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
               m_EN = 0.01, #mol N/molM_V #Reserve density of N reserve (initial mass of N reserve per intital mass of structure)
-              M_V = 0.05/(w_V+0.01*w_EN+0.1*w_EC)) #molM_V #initial mass of structure
+              M_V = 0.05/(w_V+0.01*w_EN+0.002*w_EC)) #molM_V #initial mass of structure
 
 state_LoY2 <- c(m_EC = 0.01, #0.9 #mol C/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
               m_EN = 0.09, #mol N/molM_V #Reserve density of N reserve (initial mass of N reserve per intital mass of structure)
-              M_V = 0.05/(w_V+0.09*w_EN+0.9*w_EC)) #molM_V #initial mass of structure
+              M_V = 0.05/(w_V+0.09*w_EN+0.01*w_EC)) #molM_V #initial mass of structure
 
 state_Johansson <- c(m_EC = 0.3, #mol C/molM_V  #Reserve density of C reserve (initial mass of C reserve per intital mass of structure)
                      m_EN = 0.01, #mol N/molM_V #Reserve density of N reserve (initial mass of N reserve per intital mass of structure)
