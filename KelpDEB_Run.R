@@ -815,56 +815,7 @@ sol_RomePt2_Y2$source  <- "Narragansett Bay S 2"
 #combine all Y2 field data into one dataframe
 sol_all_Y2 <- rbind(sol_Dredge1_Y2, sol_Dredge2_Y2, sol_RomePt1_Y2, sol_RomePt2_Y2, sol_Sled1_Y2, sol_Sled2_Y2, sol_Wickford1_Y2)
 
-##### Model Plots (Fig 3, 6, 7, 8) #####
-#Figure 6
-#Temperature y1 plot
-plot_T_Y1 <- ggplot(data = sol_all, aes(Date, Temp_C, color = source)) + 
-  geom_point() +
-  scale_color_manual(values = c("gray77", "gray60", "gray60", "gray30", "gray30", "gray0", "gray0")) +
-  ylim(-2, 25) +
-  theme_bw() +
-  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
-  theme(legend.title = element_blank()) +
-  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
-  labs(x= "Date (2017-2018)", y = "Temperature (°C)") +
-  ggtitle("A")
-#Temperature y2 plot
-plot_T_Y2 <- ggplot(data = sol_all_Y2, aes(Date, Temp_C, color = source)) + 
-  geom_point() +
-  scale_color_manual(values = c("gray77", "gray60", "gray60", "gray30", "gray30", "gray0", "gray0")) +
-  ylim(-2, 25) +
-  xlim(as.POSIXct(c("2018-10-30 23:00:00", "2019-06-01 23:00:00"))) +
-  theme_bw() +
-  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
-  theme(legend.title = element_blank()) +
-  theme(legend.position="none") + 
-  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
-  labs(x= "Date (2018-2019)", y = "Temperature (°C)") +
-  ggtitle("B")
-#N forcing y1 plot
-plot_N <- ggplot(data = sol_all, aes(Date, N, color = source)) + 
-  geom_line(size = 2) +
-  scale_color_manual(values = c("gray77", "gray60", "gray60", "gray30", "gray30", "gray0", "gray0")) +
-  theme_bw() +
-  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
-  theme(legend.position="none") +
-  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
-  ylim(0, 1e-05) +
-  labs(x= "Date (2017-2018)", y = bquote('mol' ~NO[3]^{"-"}~ 'and' ~NO[2]^{"-"}~ 'L'^"-1")) +
-  ggtitle("C")
-#N forcing y2 plot
-plot_N_Y2 <- ggplot(data = sol_all_Y2, aes(Date, N, color = source)) + 
-  geom_line(size = 2) +
-  scale_color_manual(values = c("gray77", "gray60", "gray60", "gray30", "gray30", "gray0", "gray0")) +
-  theme_bw() +
-  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
-  theme(legend.position="none") +
-  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
-  ylim(0, 1e-05) +
-  labs(x= "Date (2018-2019)", y = bquote('mol' ~NO[3]^{"-"}~ 'and'~NO[2]^{"-"}~ 'L'^"-1")) +
-  ggtitle("D")
-grid.arrange(plot_T_Y1, plot_T_Y2, plot_N, plot_N_Y2, ncol=2) #gridded plot
-
+##### Model Plots (Fig 3, 6, 8, 9) #####
 #Figure 3: combining all irradiance forcings
 plot_I_NBN <- ggplot() + 
   geom_point(data = sol_all[sol_all$source == "Narragansett Bay N 1",], aes(Date, I), color = "gray0") +
@@ -995,7 +946,56 @@ plot_J_I_PJ_Y2 <- ggplot() +
 
 grid.arrange(plot_J_I_NB, plot_J_I_PJ, plot_J_I_NB_Y2, plot_J_I_PJ_Y2, ncol=2)
 
-#Figure 7
+#Figure 6
+#Temperature y1 plot
+plot_T_Y1 <- ggplot(data = sol_all, aes(Date, Temp_C, color = source)) + 
+  geom_point() +
+  scale_color_manual(values = c("gray77", "gray60", "gray60", "gray30", "gray30", "gray0", "gray0")) +
+  ylim(-2, 25) +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
+  labs(x= "Date (2017-2018)", y = "Temperature (°C)") +
+  ggtitle("A")
+#Temperature y2 plot
+plot_T_Y2 <- ggplot(data = sol_all_Y2, aes(Date, Temp_C, color = source)) + 
+  geom_point() +
+  scale_color_manual(values = c("gray77", "gray60", "gray60", "gray30", "gray30", "gray0", "gray0")) +
+  ylim(-2, 25) +
+  xlim(as.POSIXct(c("2018-10-30 23:00:00", "2019-06-01 23:00:00"))) +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position="none") + 
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
+  labs(x= "Date (2018-2019)", y = "Temperature (°C)") +
+  ggtitle("B")
+#N forcing y1 plot
+plot_N <- ggplot(data = sol_all, aes(Date, N, color = source)) + 
+  geom_line(size = 2) +
+  scale_color_manual(values = c("gray77", "gray60", "gray60", "gray30", "gray30", "gray0", "gray0")) +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
+  theme(legend.position="none") +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
+  ylim(0, 1e-05) +
+  labs(x= "Date (2017-2018)", y = bquote('mol' ~NO[3]^{"-"}~ 'and' ~NO[2]^{"-"}~ 'L'^"-1")) +
+  ggtitle("C")
+#N forcing y2 plot
+plot_N_Y2 <- ggplot(data = sol_all_Y2, aes(Date, N, color = source)) + 
+  geom_line(size = 2) +
+  scale_color_manual(values = c("gray77", "gray60", "gray60", "gray30", "gray30", "gray0", "gray0")) +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
+  theme(legend.position="none") +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
+  ylim(0, 1e-05) +
+  labs(x= "Date (2018-2019)", y = bquote('mol' ~NO[3]^{"-"}~ 'and'~NO[2]^{"-"}~ 'L'^"-1")) +
+  ggtitle("D")
+grid.arrange(plot_T_Y1, plot_T_Y2, plot_N, plot_N_Y2, ncol=2) #gridded plot
+
+#Figure 8
 plot_J_EC_R_PJ <- ggplot() +
   geom_point(data = sol_all[sol_all$source == "Point Judith Pond S 1",], aes(Date, J_EC_R, color = source)) +
   geom_point(data = sol_all[sol_all$source == "Point Judith Pond N 1",], aes(Date, J_EC_R, color = source)) +
@@ -1007,17 +1007,6 @@ plot_J_EC_R_PJ <- ggplot() +
   theme(legend.position="none") + 
   labs(x= "Date (2017-2018)", y = bquote('Rejected C (mol C mol Mv'^"-1"*' h'^"-1"*')')) +
   ggtitle("A)")
-plot_J_EN_R_PJ <- ggplot() +
-  geom_point(data = sol_all[sol_all$source == "Point Judith Pond S 1",], aes(Date, J_EN_R, color = source)) +
-  geom_point(data = sol_all[sol_all$source == "Point Judith Pond N 1",], aes(Date, J_EN_R, color = source)) +
-  scale_color_grey() +
-  xlim(as.POSIXct(c("2017-10-30 23:00:00", "2018-06-01 23:00:00"))) +
-  theme_bw() +
-  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
-  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
-  theme(legend.position="none") + 
-  labs(x= "Date (2017-2018)", y = bquote('Rejected N (mol N mol Mv'^"-1"*' h'^"-1"*')')) +
-  ggtitle("B)")
 plot_J_EC_R_PJ_Y2 <- ggplot() +
   geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond S 1",], aes(Date, J_EC_R, color = source)) +
   geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond N 1",], aes(Date, J_EC_R, color = source)) +
@@ -1028,6 +1017,17 @@ plot_J_EC_R_PJ_Y2 <- ggplot() +
   theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
   theme(legend.position="none") + 
   labs(x= "Date (2018-2019)", y = bquote('Rejected C (mol C mol Mv'^"-1"*' h'^"-1"*')')) +
+  ggtitle("B)")
+plot_J_EN_R_PJ <- ggplot() +
+  geom_point(data = sol_all[sol_all$source == "Point Judith Pond S 1",], aes(Date, J_EN_R, color = source)) +
+  geom_point(data = sol_all[sol_all$source == "Point Judith Pond N 1",], aes(Date, J_EN_R, color = source)) +
+  scale_color_grey() +
+  xlim(as.POSIXct(c("2017-10-30 23:00:00", "2018-06-01 23:00:00"))) +
+  theme_bw() +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
+  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
+  theme(legend.position="none") + 
+  labs(x= "Date (2017-2018)", y = bquote('Rejected N (mol N mol Mv'^"-1"*' h'^"-1"*')')) +
   ggtitle("C)")
 plot_J_EN_R_PJ_Y2 <- ggplot() +
   geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond S 1",], aes(Date, J_EN_R, color = source)) +
@@ -1040,9 +1040,9 @@ plot_J_EN_R_PJ_Y2 <- ggplot() +
   theme(legend.position="none") + 
   labs(x= "Date (2018-2019)", y = bquote('Rejected N (mol N mol Mv'^"-1"*' h'^"-1"*')')) +
   ggtitle("D)")
-grid.arrange(plot_J_EC_R_PJ, plot_J_EN_R_PJ, plot_J_EC_R_PJ_Y2, plot_J_EN_R_PJ_Y2, ncol=2)
+grid.arrange(plot_J_EC_R_PJ, plot_J_EC_R_PJ_Y2, plot_J_EN_R_PJ, plot_J_EN_R_PJ_Y2, ncol=2)
 
-#Figure 8
+#Figure 9
 plot_J_I_PJ_Y2 <- ggplot() +
   geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond S 1",], aes(Date, J_I, color = source)) +
   geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond N 1",], aes(Date, J_I, color = source)) +
@@ -1067,7 +1067,7 @@ plot_J_EC_A_PJ_Y2 <- ggplot() +
   ggtitle("B)")
 grid.arrange(plot_J_I_PJ_Y2, plot_J_EC_A_PJ_Y2, ncol=2)
 
-##### Kelp Field Data Comparison plot (Figure 9) ####
+##### Kelp Field Data Comparison plot (Figure 7) ####
 #import field data
 KelpY1 <- read.csv("Year1kelpdata.csv", header = TRUE, fileEncoding="UTF-8-BOM")
 names(KelpY1)[2] <- "Site"
