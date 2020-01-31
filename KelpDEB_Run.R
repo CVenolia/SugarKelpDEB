@@ -899,53 +899,6 @@ plot_I_PJS_Y2 <- ggplot() +
   ggtitle("Point Judith Pond S")
 grid.arrange(plot_I_NBN, plot_I_NBS, plot_I_PJN, plot_I_PJS, plot_I_NBN_Y2, plot_I_NBS_Y2, plot_I_PJN_Y2, plot_I_PJS_Y2, ncol=4)
 
-plot_J_I_NB <- ggplot() +
-  geom_point(data = sol_all[sol_all$source == "Narragansett Bay S 1",], aes(Date, J_I, color = source)) +
-  geom_point(data = sol_all[sol_all$source == "Narragansett Bay N 1",], aes(Date, J_I, color = source)) +
-  scale_color_grey() +
-  xlim(as.POSIXct(c("2017-10-30 23:00:00", "2018-06-01 23:00:00"))) +
-  theme_bw() +
-  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
-  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
-  theme(legend.position="none") + 
-  labs(x= "Date (2017-2018)", y = bquote('Spec. relaxation (mol γ mol Mv'^"-1"*' h'^"-1"*')')) +
-  ggtitle("A)")
-plot_J_I_PJ <- ggplot() +
-  geom_point(data = sol_all[sol_all$source == "Point Judith Pond S 1",], aes(Date, J_I, color = source)) +
-  geom_point(data = sol_all[sol_all$source == "Point Judith Pond N 1",], aes(Date, J_I, color = source)) +
-  scale_color_grey() +
-  xlim(as.POSIXct(c("2017-10-30 23:00:00", "2018-06-01 23:00:00"))) +
-  theme_bw() +
-  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
-  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
-  theme(legend.position="none") + 
-  labs(x= "Date (2017-2018)", y = bquote('Spec. relaxation (mol γ mol Mv'^"-1"*' h'^"-1"*')')) +
-  ggtitle("B)")
-plot_J_I_NB_Y2 <- ggplot() +
-  geom_point(data = sol_all_Y2[sol_all_Y2$source == "Narragansett Bay S 1",], aes(Date, J_I, color = source)) +
-  geom_point(data = sol_all_Y2[sol_all_Y2$source == "Narragansett Bay N 1",], aes(Date, J_I, color = source)) +
-  scale_color_grey() +
-  xlim(as.POSIXct(c("2018-10-30 23:00:00", "2019-06-01 23:00:00"))) +
-  theme_bw() +
-  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
-  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
-  theme(legend.position="none") + 
-  labs(x= "Date (2018-2019)", y = bquote('Spec. relaxation (mol γ mol Mv'^"-1"*' h'^"-1"*')')) +
-  ggtitle("C)")
-plot_J_I_PJ_Y2 <- ggplot() +
-  geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond S 1",], aes(Date, J_I, color = source)) +
-  geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond N 1",], aes(Date, J_I, color = source)) +
-  scale_color_grey() +
-  xlim(as.POSIXct(c("2018-10-30 23:00:00", "2019-06-01 23:00:00"))) +
-  theme_bw() +
-  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
-  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
-  theme(legend.position="none") + 
-  labs(x= "Date (2018-2019)", y = bquote('Spec. relaxation (mol γ mol Mv'^"-1"*' h'^"-1"*')')) +
-  ggtitle("D)")
-
-grid.arrange(plot_J_I_NB, plot_J_I_PJ, plot_J_I_NB_Y2, plot_J_I_PJ_Y2, ncol=2)
-
 #Figure 6
 #Temperature y1 plot
 plot_T_Y1 <- ggplot(data = sol_all, aes(Date, Temp_C, color = source)) + 
@@ -1043,29 +996,52 @@ plot_J_EN_R_PJ_Y2 <- ggplot() +
 grid.arrange(plot_J_EC_R_PJ, plot_J_EC_R_PJ_Y2, plot_J_EN_R_PJ, plot_J_EN_R_PJ_Y2, ncol=2)
 
 #Figure 9
+plot_T_PJ_Y2 <- ggplot() + 
+  geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond S 1",], aes(Date, C_T, color = source)) +
+  geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond N 1",], aes(Date, C_T, color = source)) +
+  scale_color_grey() +
+  xlim(as.POSIXct(c("2018-11-30 23:00:00", "2019-06-01 23:00:00"))) +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position="none") + 
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
+  labs(x= "Date (2018-2019)", y = "Temperature correction") +
+  ggtitle("A)")
+plot_I_PJ_Y2 <- ggplot() + 
+  geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond S 1",], aes(Date, I)) +
+  geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond N 1",], aes(Date, I)) +
+  scale_color_grey() +
+  xlim(as.POSIXct(c("2018-11-30 23:00:00", "2019-06-01 23:00:00"))) +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
+  theme(legend.position="none") +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
+  labs(x= "Date (2018-2019)", y = bquote('E m'^"-2"*' h'^"-1")) +
+  ggtitle("B)")
 plot_J_I_PJ_Y2 <- ggplot() +
   geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond S 1",], aes(Date, J_I, color = source)) +
   geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond N 1",], aes(Date, J_I, color = source)) +
   scale_color_grey() +
-  xlim(as.POSIXct(c("2018-10-30 23:00:00", "2019-06-01 23:00:00"))) +
+  xlim(as.POSIXct(c("2018-11-30 23:00:00", "2019-06-01 23:00:00"))) +
   theme_bw() +
   theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
   theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
   theme(legend.position="none") + 
   labs(x= "Date (2018-2019)", y = bquote('Spec. relaxation (mol E mol Mv'^"-1"*' h'^"-1"*')')) +
-  ggtitle("A)")
+  ggtitle("C)")
 plot_J_EC_A_PJ_Y2 <- ggplot() +
   geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond S 1",], aes(Date, J_EC_A, color = source)) +
   geom_point(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond N 1",], aes(Date, J_EC_A, color = source)) +
   scale_color_grey() +
-  xlim(as.POSIXct(c("2018-10-30 23:00:00", "2019-06-01 23:00:00"))) +
+  xlim(as.POSIXct(c("2018-11-30 23:00:00", "2019-06-01 23:00:00"))) +
   theme_bw() +
   theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
   theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
   theme(legend.position="none") + 
   labs(x= "Date (2018-2019)", y = bquote('C assimilation (mol C mol Mv'^"-1"*' h'^"-1"*')')) +
-  ggtitle("B)")
-grid.arrange(plot_J_I_PJ_Y2, plot_J_EC_A_PJ_Y2, ncol=2)
+  ggtitle("D)")
+grid.arrange(plot_T_PJ_Y2, plot_I_PJ_Y2, plot_J_I_PJ_Y2, plot_J_EC_A_PJ_Y2, ncol=2)
 
 ##### Kelp Field Data Comparison plot (Figure 7) ####
 #import field data
