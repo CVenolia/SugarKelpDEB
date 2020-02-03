@@ -7,7 +7,7 @@ and Austin Humphries (humphries@uri.edu).
 
   *KelpDEB_Run.R*: The runfile for the Kelp DEB model which contains most of the plot codes.
   
-  *KelpDEB_model.R*: The Kelp DEB model turned into a function using deSolve.
+  *KelpDEB_model.R*: The Kelp DEB model turned into a function using the R package deSolve.
   
   *SolveR_R.R*: The Newton-Raphson solver for the net specific growth rate (r) in the Kelp DEB model.
   
@@ -31,9 +31,9 @@ and Austin Humphries (humphries@uri.edu).
 
 *Sled_Y2_HoboLightTemp.csv*: Temperature data for Sled (Pt Judith Pond N) in 2018-2019
 
-*WaterSampleAnalysis2Y1.csv*: Nitrate and ammonium concentration from all sites in 2017-2018
+*WaterSampleAnalysis2Y1.csv*: Nitrate and nitrite concentration from all sites in 2017-2018
 
-*WaterSamplesY2.csv*: Nitrate and ammonium concentration from all sites in 2018-2019
+*WaterSamplesY2.csv*: Nitrate and nitrite concentration from all sites in 2018-2019
 
 *Wickford_Y1_hobo.csv*: Temperature data for Wickford (Narragansett Bay N) in 2017-2018
 
@@ -45,15 +45,15 @@ and Austin Humphries (humphries@uri.edu).
 
 **Literature data key:** for references see Venolia et al. (in press)
 
- *BrentonPoint_Segarra2002CarbonData.csv*: Dissolved inorganic carbon concentratration used for Narragansett Bay sites (Segarra, 2002)
+ *BrentonPoint_Segarra2002CarbonData.csv*: Dissolved inorganic carbon concentration used for Narragansett Bay sites (Segarra, 2002)
  
- *EspinozaChapman1983_Nuptake_9C_StMargaretsBay.csv*: Nitrate uptake data for kelp from St Margarets Bay with an experimental temperacture of 9 degrees C from Espinoza and Chapman (1983)
+ *EspinozaChapman1983_Nuptake_9C_StMargaretsBay.csv*: Nitrate uptake data for kelp from St Margarets Bay with an experimental temperature of 9 degrees C from Espinoza and Chapman (1983)
  
- *EspinozaChapman1983_Nuptake_18C_StMargaretsBay.csv*: Nitrate uptake data for kelp from St Margarets Bay with an experimental temperacture of 18 degrees C from Espinoza and Chapman (1983)
+ *EspinozaChapman1983_Nuptake_18C_StMargaretsBay.csv*: Nitrate uptake data for kelp from St Margarets Bay with an experimental temperature of 18 degrees C from Espinoza and Chapman (1983)
  
  *Johansson2002.csv*: Oxygen production rate for kelp from Johansson and Snoeijs (2002)
  
- *Ninigret_EPA_DIC.csv*: Dissolved inorganic carbon concentratration used for Pt Judith sites (J. Grear, unpublished data)
+ *Ninigret_EPA_DIC.csv*: Dissolved inorganic carbon concentration used for Pt Judith sites (J. Grear, unpublished data)
  
  *NOAASurfaceIrradiance.csv*: radiative forcing from the North American Regional Reanalysis (Mesinger et al., 2006) used to estimate photosynthetically active radiation
  
