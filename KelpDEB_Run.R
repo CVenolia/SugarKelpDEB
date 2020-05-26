@@ -58,17 +58,17 @@ w_O2 <- 32 #g/mol
 
 ##### Parameters compiled #####
 params_Lo <- c(#maximum volume-specific assimilation rate of N before temperature correction
-               JENAM = 1.5e-4, #mol N / molM_V / h
-               #maximum surface-specific assimilation rate of N
+               JENAM = 1.5e-4, #mol N / molV / h
+               #half saturation constant of N uptake
                K_N = 2.5e-6, #molNO3 and NO2/L
                #max volume-specific carbon dioxide assimilation rate
-               JCO2M = 0.0075, #molC/molM_V/h
+               JCO2M = 0.0075, #mol DIC/molV/h
                #half saturation constant of C uptake
                K_C = 4e-7, #mol DIC/L
                #maximum volume-specific carbon assimilation rate
-               JECAM = 0.282, #molC/molM_V/h
+               JECAM = 0.282, #molC/molV/h
                #Photosynthetic unit density
-               rho_PSU = 0.5, #mol PSU/ mol Mv
+               rho_PSU = 0.5, #mol PSU/ mol V
                #binding probability of photons to a Light SU
                b_I = 0.5, #dimensionless
                #Specific photon arrival cross section
@@ -77,23 +77,23 @@ params_Lo <- c(#maximum volume-specific assimilation rate of N before temperatur
                k_I = 0.075, #molγ molPS–1 h–1
                #Yield factor of C reserve to photon
                y_I_C = 10, #mol γ mol C-1
-               #Yield factor of C reserve to CO2
-               y_CO2_C = 1, #mol CO2 mol C-1
+               #Yield factor of C reserve to DIC
+               y_CO2_C = 1, #mol DIC mol C-1
                #Yield factor of photon to O2
                y_LO2 = 0.125, #molO2 molγ –1
                #reserve turnover
-               kE_C = 0.05,
-               kE_N = 0.01, 
+               kE_C = 0.02, #0.05, #1/h
+               kE_N = 0.04, #0.01, #1/h
                #fraction of rejection flux from growth SU incorporated back into i-reserve
                kappa_Ei = 0.9, #dimensionless
                #yield of structure on N reserve (percent of N in structure)
-               y_EN_V = 0.04, #mol N/mol M_V
+               y_EN_V = 0.04, #mol N/mol V
                #yield of structure on C reserve (percent of C in structure)
-               y_EC_V = 1, #mol C/mol M_V
+               y_EC_V = 1, #mol C/mol V
                #specific maintenance costs requiring N before temp correction
-               JENM = 4e-6, #mol N/molM_V/h
+               JENM = 4*10^-6, #4e-6, #mol N/molM_V/h
                #specific maintenance costs requiring C before temp correction
-               JECM = 1e-6, #mol C/molM_V/h
+               JECM = 1*10^-6, #1e-6, #mol C/molM_V/h
                #Arrhenius temperature
                T_A = 6314.3, # K
                #Upper boundary of temperature tolerance
@@ -443,11 +443,11 @@ W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
 names(WSA_Y2)[1] <- "Site" #only necessary to run this code on some computers
-Sled_WSA <- filter(WSA_Y2, Site == "Moonstone Sled") #filter by site
+Sled_WSA2 <- filter(WSA_Y2, Site == "Moonstone Sled") #filter by site
 daily <- seq(as.Date("2018-12-12"), as.Date("2019-05-03"), by="days") #date range kelp in water
-Sled_WSA$NO3NO2_µM <- Sled_WSA$NO3NO2_µM/1000000 #convert from micromoles/L to moles/L
+Sled_WSA2$NO3NO2_µM <- Sled_WSA2$NO3NO2_µM/1000000 #convert from micromoles/L to moles/L
 #multiplied by 24 to go from daily to hourly
-N_field <- approxfun(x = c(1*24, 57*24, 93*24, 124*24, 142*24, 163*24), y = c(Sled_WSA$NO3NO2_µM), method = "linear", rule = 2) #N forcing function
+N_field <- approxfun(x = c(1*24, 57*24, 93*24, 124*24, 142*24, 163*24), y = c(Sled_WSA2$NO3NO2_µM), method = "linear", rule = 2) #N forcing function
 ###### DIC forcing set-up ###########
 Sled_DIC <- read.csv("Ninigret_EPA_DIC.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import Ninigret DIC data
 CO_2 <- mean(Sled_DIC$DIC.uMkg.mean) #micromole DIC/kg (Jason said it was okay to assume that 1kg of seawater is 1L of seawater (actual conversion requires density calc from salinity and T))
@@ -477,11 +477,11 @@ W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
 names(WSA_Y2)[1] <- "Site" #only necessary for some computers to run this code
-Sled_WSA <- filter(WSA_Y2, Site == "Moonstone Sled") #filter by site
+Sled_WSA2 <- filter(WSA_Y2, Site == "Moonstone Sled") #filter by site
 daily <- seq(as.Date("2019-02-06"), as.Date("2019-05-03"), by="days") #days the kelp was in the water
-Sled_WSA$NO3NO2_µM <- Sled_WSA$NO3NO2_µM/1000000 #convert from micromoles/L to moles/L
-Sled_WSA <- Sled_WSA[2:6,] #remove the point before the relevant time range
-N_field <- approxfun(x = c(1*24, 37*24, 68*24, 86*24, 107*24), y = c(Sled_WSA$NO3NO2_µM), method = "linear", rule = 2) #N forcing function
+Sled_WSA2$NO3NO2_µM <- Sled_WSA2$NO3NO2_µM/1000000 #convert from micromoles/L to moles/L
+Sled_WSA2 <- Sled_WSA2[2:6,] #remove the point before the relevant time range
+N_field <- approxfun(x = c(1*24, 37*24, 68*24, 86*24, 107*24), y = c(Sled_WSA2$NO3NO2_µM), method = "linear", rule = 2) #N forcing function
 
 ###### DIC forcing set-up ###########
 Sled_DIC <- read.csv("Ninigret_EPA_DIC.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import Ninigret DIC data
@@ -512,11 +512,11 @@ W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
 names(WSA_Y2)[1] <- "Site" #only necessary for some computers to run this code
-Dredge_WSA <- filter(WSA_Y2, Site == "Moonstone Dredge") #filter by site
+Dredge_WSA2 <- filter(WSA_Y2, Site == "Moonstone Dredge") #filter by site
 daily <- seq(as.Date("2018-12-12"), as.Date("2019-05-03"), by="days") #growth date range
-Dredge_WSA$NO3NO2_µM <- Dredge_WSA$NO3NO2_µM/1000000 #convert from micromoles/L to moles/L
+Dredge_WSA2$NO3NO2_µM <- Dredge_WSA2$NO3NO2_µM/1000000 #convert from micromoles/L to moles/L
 #multiply by 24 to go from daily to hourly
-N_field <- approxfun(x = c(1*24, 93*24, 124*24, 142*24, 163*24), y = c(Dredge_WSA$NO3NO2_µM), method = "linear", rule = 2) #N forcing function
+N_field <- approxfun(x = c(1*24, 93*24, 124*24, 142*24, 163*24), y = c(Dredge_WSA2$NO3NO2_µM), method = "linear", rule = 2) #N forcing function
 ###### DIC forcing set-up ###########
 Sled_DIC <- read.csv("Ninigret_EPA_DIC.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import Ninigret DIC data
 CO_2 <- mean(Sled_DIC$DIC.uMkg.mean) #micromole DIC/kg (Jason said it was okay to assume that 1kg of seawater is 1L of seawater (actual conversion requires density calc from salinity and T))
@@ -546,11 +546,11 @@ W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
 names(WSA_Y2)[1] <- "Site" #only necessary for some computers to run this code
-Dredge_WSA <- filter(WSA_Y2, Site == "Moonstone Dredge") #filter by site
+Dredge_WSA2 <- filter(WSA_Y2, Site == "Moonstone Dredge") #filter by site
 daily <- seq(as.Date("2019-02-06"), as.Date("2019-05-03"), by="days") #date range kelp at farm
-Dredge_WSA$NO3NO2_µM <- Dredge_WSA$NO3NO2_µM/1000000 #convert from micromoles/L to moles/L
+Dredge_WSA2$NO3NO2_µM <- Dredge_WSA2$NO3NO2_µM/1000000 #convert from micromoles/L to moles/L
 #multiply by 24 to switch from daily to hourly
-N_field <- approxfun(x = c(-25*24, 37*24, 68*24, 86*24, 107*24), y = c(Dredge_WSA$NO3NO2_µM), method = "linear", rule = 2) #N forcing function
+N_field <- approxfun(x = c(-25*24, 37*24, 68*24, 86*24, 107*24), y = c(Dredge_WSA2$NO3NO2_µM), method = "linear", rule = 2) #N forcing function
 ###### DIC forcing set-up ###########
 Sled_DIC <- read.csv("Ninigret_EPA_DIC.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import Ninigret DIC data
 CO_2 <- mean(Sled_DIC$DIC.uMkg.mean) #micromole DIC/kg (Jason said it was okay to assume that 1kg of seawater is 1L of seawater (actual conversion requires density calc from salinity and T))
@@ -580,11 +580,11 @@ W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
 WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
 names(WSA_Y2)[1] <- "Site" #only necessary for some computers to run this code
-Wickford_WSA <- filter(WSA_Y2, Site == "Wickford") #filter by site
+Wickford_WSA2 <- filter(WSA_Y2, Site == "Wickford") #filter by site
 daily <- seq(as.Date("2018-12-19"), as.Date("2019-05-23"), by="days") #the date range for the kelp in the field
-Wickford_WSA$NO3NO2_µM <- Wickford_WSA$NO3NO2_µM/1000000 #convert from micromoles/L to moles/L
+Wickford_WSA2$NO3NO2_µM <- Wickford_WSA2$NO3NO2_µM/1000000 #convert from micromoles/L to moles/L
 #multiply by 24 to convert daily values to hourly values
-N_field <- approxfun(x = c(1*24, 55*24, 85*24, 156*24), y = c(Wickford_WSA$NO3NO2_µM), method = "linear", rule = 2) #N forcing function
+N_field <- approxfun(x = c(1*24, 55*24, 85*24, 156*24), y = c(Wickford_WSA2$NO3NO2_µM), method = "linear", rule = 2) #N forcing function
 ###### DIC forcing set-up ###########
 Segarra2002Carbon <- read.csv("BrentonPoint_Segarra2002CarbonData.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import lit TCO2 data
 names(Segarra2002Carbon)[1] <- "Date" #Only necessary for running the code on some computer
@@ -613,14 +613,13 @@ sol_Wickford1_Y2 <- ode(y = state_LoY2, t = times_Y2_Wickford1, func = rates_Lo,
 #Setting up the forcing functions with field data for Rome Point line 1 (y2)
 W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
-WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
-WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
-names(WSA_Y2)[1] <- "Site" #only necessary for some computers to run this code
-RomePt_WSA <- filter(WSA_Y2, Site == "Rome Point") #filter by site
+GSO_N1 <- read.csv("T98BayNitrate.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
+GSO_N1$Date <- mdy(GSO_N1$Date) #convert dates
+GSO_N1 <- GSO_N1[103:124,]
 daily <- seq(as.Date("2018-12-20"), as.Date("2019-05-24"), by="days") #the date range for kelp on the farm
-RomePt_WSA$NO3NO2_µM <- RomePt_WSA$NO3NO2_µM/1000000 #convert from micromoles/L to moles/L
+GSO_N1$NO3NO2 <- GSO_N1$NO3NO2/1000000 #convert from micromoles/L to moles/L
 #multiplied by 24 to take daily values to hourly values
-N_field <- approxfun(x = c(1*24, 64*24, 84*24, 155*24), y = c(RomePt_WSA$NO3NO2_µM), method = "linear", rule = 2) #N forcing function
+N_field <- approxfun(x = c(8*24, 14*24, 20*24, 29*24, 35*24, 41*24, 48*24, 56*24, 62*24, 69*24, 79*24, 83*24, 93*24, 99*24, 107*24, 111*24, 118*24, 125*24, 132*24, 139*24, 146*24, 153*24), y = c(GSO_N$NO3NO2), method = "linear", rule = 2) #N forcing function
 ###### DIC forcing set-up ###########
 Segarra2002Carbon <- read.csv("BrentonPoint_Segarra2002CarbonData.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import literature DIC data
 names(Segarra2002Carbon)[1] <- "Date" #Only necessary to run this code on some computers
@@ -656,15 +655,13 @@ sol_RomePt1_Y2 <- ode(y = state_LoY2, t = times_Y2_RomePt1, func = rates_Lo, par
 #Setting up the forcing functions with field data for Rome Point line 2 (y2)
 W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
-WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
-WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
-names(WSA_Y2)[1] <- "Site" #only necessary for some computers to run this code
-RomePt_WSA <- filter(WSA_Y2, Site == "Rome Point") #filter by site
+GSO_N <- read.csv("T98BayNitrate.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
+GSO_N$Date <- mdy(GSO_N$Date) #convert dates
+GSO_N <- GSO_N[112:124,]
 daily <- seq(as.Date("2019-2-21"), as.Date("2019-05-24"), by="days") #date range for the kelp on the farm
-RomePt_WSA$NO3NO2_µM <- RomePt_WSA$NO3NO2_µM/1000000 #convert from micromoles/L to moles/L
-RomePt_WSA <- RomePt_WSA[2:4,] #subset based on what data is relevant here
-#multiplying by 24 to converty from daily values to hourly values
-N_field <- approxfun(x = c(1*24, 21*24, 92*24), y = c(RomePt_WSA$NO3NO2_µM), method = "linear", rule = 2) #N forcing function
+GSO_N$NO3NO2 <- GSO_N$NO3NO2/1000000 #convert from micromoles/L to moles/L
+#multiplied by 24 to take daily values to hourly values
+N_field <- approxfun(x = c(6*24, 16*24, 20*24, 30*24, 36*24, 44*24, 48*24, 55*24, 62*24, 69*24, 76*24, 83*24, 90*24), y = c(GSO_N$NO3NO2), method = "linear", rule = 2) #N forcing function
 ###### DIC forcing set-up ###########
 Segarra2002Carbon <- read.csv("BrentonPoint_Segarra2002CarbonData.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import lit TCO2 data
 names(Segarra2002Carbon)[1] <- "Date" #Only necessary to run this code on some computers
@@ -846,18 +843,19 @@ grid.arrange(plot_I_Y1, plot_I_Y2, ncol=2)
 #Temperature y1 plot
 plot_T_Y1 <- ggplot(data = sol_all, aes(Date, Temp_C, color = source)) + 
   geom_line() +
-  scale_color_manual(values = c("gray77", "gray60", "gray60", "gray30", "gray30", "gray0", "gray0")) +
+  scale_color_manual(values = c("blue", "blueviolet", "cyan", "coral", "darkgoldenrod1", "firebrick", "black")) +
   ylim(-2, 25) +
   theme_bw() +
   theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
   theme(legend.title = element_blank()) +
+  theme(legend.position="none") + 
   theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
   labs(x= "Date (2017-2018)", y = "Temperature (°C)") +
   ggtitle("A")
 #Temperature y2 plot
 plot_T_Y2 <- ggplot(data = sol_all_Y2, aes(Date, Temp_C, color = source)) + 
   geom_line() +
-  scale_color_manual(values = c("gray77", "gray60", "gray60", "gray30", "gray30", "gray0", "gray0")) +
+  scale_color_manual(values = c("blue", "blueviolet", "cyan", "coral", "darkgoldenrod1", "firebrick", "black")) + #"gray77", "gray60", "gray60", "gray30", "gray30", "gray0", "gray0"
   ylim(-2, 25) +
   xlim(as.POSIXct(c("2018-10-30 23:00:00", "2019-06-01 23:00:00"))) +
   theme_bw() +
@@ -868,28 +866,62 @@ plot_T_Y2 <- ggplot(data = sol_all_Y2, aes(Date, Temp_C, color = source)) +
   labs(x= "Date (2018-2019)", y = "Temperature (°C)") +
   ggtitle("B")
 #N forcing y1 plot
-plot_N <- ggplot(data = sol_all, aes(Date, N*1000000, color = source)) + 
-  geom_line(size = 2) +
-  scale_color_manual(values = c("gray77", "gray60", "gray60", "gray30", "gray30", "gray0", "gray0")) +
+Sled_WSA$Date <- as.POSIXct(c("2018-04-11 23:0:0", "2018-03-20 23:0:0", "2018-02-14 23:0:0", "2017-11-01 23:0:0", "2017-11-29 23:0:0", "2018-01-24 23:0:0", "2018-04-22 23:0:0"))
+Dredge_WSA$Date <- as.POSIXct(c("2018-03-20 23:0:0", "2018-04-11 23:0:0", "2018-01-24 23:0:0", "2017-11-01 23:0:0", "2018-02-14 23:0:0"))
+Wickford_WSA$Date <- as.POSIXct(c("2018-03-29 23:0:0", "2017-08-18 23:0:0", "2017-12-04 23:0:0", "2018-02-23 23:0:0", "2018-02-01 23:0:0", "2018-01-11 23:0:0", "2018-04-21 23:0:0", "2018-09-11 23:0:0", "2018-08-08 23:0:0"))
+RomePt_WSA$Date <- as.POSIXct(c("2018-02-23 23:0:0", "2018-03-29 23:0:0", "2017-11-01 23:0:0", "2017-08-18 23:0:0", "2018-01-11 23:0:0", "2018-02-01 23:0:0", "2018-04-21 23:0:0", "2018-09-11 23:0:0", "2018-08-08 23:0:0"))
+plot_N <- ggplot() + 
+  geom_line(data = sol_all, aes(Date, N*1000000, color = source), size = 1) +
+  geom_point(data = Sled_WSA, aes(Date, NitrateNitrite_uM)) +
+  geom_point(data = Dredge_WSA, aes(Date, NitrateNitrite_uM)) +
+  geom_point(data = Wickford_WSA, aes(Date, NitrateNitrite_uM)) +
+  geom_point(data = RomePt_WSA, aes(Date, NitrateNitrite_uM)) +
+  scale_color_manual(values = c("blue", "blueviolet", "cyan", "coral", "darkgoldenrod1", "firebrick", "black")) +
   theme_bw() +
   theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
   theme(legend.position="none") +
   theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
+  xlim(as.POSIXct(c("2017-11-01 12:00:00", "2018-04-24 12:00:00"))) +
   ylim(0, 10) +
-  labs(x= "Date (2017-2018)", y = bquote('N concentration μmol' ~NO[3]^{"-"}~ 'and' ~NO[2]^{"-"}~ 'L'^"-1")) +
+  labs(x= "Date (2017-2018)", y = bquote('N concentration mol' ~NO[3]^{"-"}~ 'and' ~NO[2]^{"-"}~ 'L'^"-1")) +
   ggtitle("C")
 #N forcing y2 plot
-plot_N_Y2 <- ggplot(data = sol_all_Y2, aes(Date, N*1000000, color = source)) + 
-  geom_line(size = 2) +
-  scale_color_manual(values = c("gray77", "gray60", "gray60", "gray30", "gray30", "gray0", "gray0")) +
+Sled_WSA2$Date <- as.POSIXct(c("2018-12-12 23:0:0", "2019-02-06 23:0:0", "2019-03-14 23:0:0", "2019-04-14 23:0:0", "2019-05-02 23:0:0", "2019-05-23 23:0:0"))
+Dredge_WSA2$Date <- as.POSIXct(c("2018-12-12 23:0:0", "2019-03-14 23:0:0", "2019-04-14 23:0:0", "2019-05-02 23:0:0", "2019-05-23 23:0:0"))
+Wickford_WSA2$Date <- as.POSIXct(c("2018-12-19 23:0:0", "2019-02-11 23:0:0", "2019-03-13 23:0:0", "2019-05-23 23:0:0"))
+GSO_N1$Date <- as.POSIXct(c("2018-12-27 23:0:0", "2019-01-02 23:0:0", "2019-01-08 23:0:0", "2019-01-17 23:0:0", "2019-01-23 23:0:0", "2019-01-29 23:0:0", "2019-02-05 23:0:0", "2019-02-13 23:0:0", "2019-02-19 23:0:0", "2019-02-26 23:0:0", "2019-03-08 23:0:0", "2019-03-12 23:0:0", "2019-03-22 23:0:0", "2019-03-28 23:0:0", "2019-04-05 23:0:0", "2019-04-09 23:0:0", "2019-04-16 23:0:0", "2019-04-23 23:0:0", "2019-04-30 23:0:0", "2019-05-07 23:0:0", "2019-05-14 23:0:0", "2019-05-21 23:0:0"))
+plot_N_Y2 <- ggplot() + 
+  geom_line(data = sol_all_Y2, aes(Date, N*1000000, color = source), size = 1) +
+  geom_point(data = Sled_WSA2, aes(Date, NO3NO2_µM*1000000)) +
+  geom_point(data = Dredge_WSA2, aes(Date, NO3NO2_µM*1000000)) +
+  geom_point(data = Wickford_WSA2, aes(Date, NO3NO2_µM*1000000)) +
+  geom_point(data = GSO_N1, aes(Date, NO3NO2*1000000)) +
+  scale_color_manual(values = c("blue", "blueviolet", "cyan", "coral", "darkgoldenrod1", "firebrick", "black")) +
   theme_bw() +
   theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
   theme(legend.position="none") +
   theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
-  ylim(0, 10) +
-  labs(x= "Date (2018-2019)", y = bquote('N concentration μmol' ~NO[3]^{"-"}~ 'and'~NO[2]^{"-"}~ 'L'^"-1")) +
+  labs(x= "Date (2018-2019)", y = bquote('N concentration mol' ~NO[3]^{"-"}~ 'and'~NO[2]^{"-"}~ 'L'^"-1")) +
   ggtitle("D")
 grid.arrange(plot_T_Y1, plot_T_Y2, plot_N, plot_N_Y2, ncol=2) #gridded plot
+
+#read in GSO N data
+GSO_N <- read.csv("T98BayNitrate.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
+GSO_N$Date <- mdy(GSO_N$Date) #convert dates
+
+ggplot() + 
+  geom_line(data = GSO_N, aes(Date, NO3NO2)) +
+  geom_line(data = Wickford_WSA, aes(Date, NitrateNitrite_uM), color ="red") +                    
+  geom_line(data = RomePt_WSA, aes(Date, NitrateNitrite_uM), color ="blue") +
+  geom_line(data = RomePt_WSA2, aes(Date, NO3NO2_µM), color ="blue") +
+  geom_line(data = Wickford_WSA2, aes(Date, NO3NO2_µM*1000000), color ="red") +  
+  #scale_color_manual(values = c("gray77", "gray60", "gray60", "gray30", "gray30", "gray0", "gray0")) +
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) +
+  #theme(legend.position="none") +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +
+  #ylim(0, 10) +
+  labs(x= "Date", y = bquote('N concentration μmol' ~NO[3]^{"-"}~ 'and'~NO[2]^{"-"}~ 'L'^"-1"))
 
 #Figure 8
 plot_J_EC_R_PJ <- ggplot() +
@@ -1012,7 +1044,7 @@ NBN1_rmse <- round(NBN1_rmse, 2)()
   
 NBN1_meandat$Date <- as.POSIXct(NBN1_meandat$Date)
 NBN1 <- ggplot() + 
-  geom_point(data = NBN1_meandat, aes(Date, mean_length), size = 2) +
+  geom_point(data = NBN1_meandat, aes(Date, mean_length), shape = 'diamond', size = 3) +
   geom_errorbar(NBN1_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all[sol_all$source == "Narragansett Bay N 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2018-04-24 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", NBN1_rmse)) +
@@ -1043,11 +1075,11 @@ erNBS2 <- merge(NBS2_meandat_sub, sol_all[sol_all$source == "Narragansett Bay S 
 NBS2_rmse <- rmse(erNBS2$mean_length, erNBS2$L_allometric)
 
 NBS1_2 <- ggplot() + 
-  geom_point(data = NBS1_meandat, aes(Date, mean_length), size = 2) +
+  geom_point(data = NBS1_meandat, aes(Date, mean_length), shape = 'diamond', size = 3) +
   geom_errorbar(NBS1_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all[sol_all$source == "Narragansett Bay S 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2018-04-24 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", NBS1_rmse)) +
-  geom_point(data = NBS2_meandat, aes(Date, mean_length), color = "gray50") +
+  geom_point(data = NBS2_meandat, aes(Date, mean_length), color = "gray50", size = 3) +
   geom_errorbar(NBS2_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1, color = "gray50") +
   geom_smooth(data = sol_all[sol_all$source == "Narragansett Bay S 2",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2018-04-24 01:00:00"), 230, hjust = 1), label = sprintf("RMSE: %f", NBS2_rmse), color = "gray50") +
@@ -1078,11 +1110,11 @@ erPJS2 <- merge(PJS2_meandat_sub, sol_all[sol_all$source == "Point Judith Pond S
 PJS2_rmse <- rmse(erPJS2$mean_length, erPJS2$L_allometric)
 
 PJS1_2 <- ggplot() + 
-  geom_point(data = PJS1_meandat, aes(Date, mean_length), size = 2) +
+  geom_point(data = PJS1_meandat, aes(Date, mean_length), shape = 'diamond', size = 3) +
   geom_errorbar(PJS1_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all[sol_all$source == "Point Judith Pond S 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2018-04-01 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", PJS1_rmse)) +
-  geom_point(data = PJS2_meandat, aes(Date, mean_length), color = "gray50") +
+  geom_point(data = PJS2_meandat, aes(Date, mean_length), color = "gray50", size = 3) +
   geom_errorbar(PJS2_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1, color = "gray50") +
   geom_smooth(data = sol_all[sol_all$source == "Point Judith Pond S 2",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2018-04-01 01:00:00"), 230, hjust = 1), label = sprintf("RMSE: %f", PJS2_rmse), color = "gray50") +
@@ -1114,11 +1146,11 @@ PJN2_rmse <- rmse(erPJN2$mean_length, erPJN2$L_allometric)
 
 
 PJN1_2 <- ggplot() + 
-  geom_point(data = PJN1_meandat, aes(Date, mean_length), size = 2) +
+  geom_point(data = PJN1_meandat, aes(Date, mean_length), shape = 'diamond', size = 3) +
   geom_errorbar(PJN1_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all[sol_all$source == "Point Judith Pond N 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2018-04-24 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", PJN1_rmse)) +
-  geom_point(data = PJN2_meandat, aes(Date, mean_length), color ="gray50") +
+  geom_point(data = PJN2_meandat, aes(Date, mean_length), color ="gray50", size = 3) +
   geom_errorbar(PJN2_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1, color = "gray50") +
   geom_smooth(data = sol_all[sol_all$source == "Point Judith Pond N 2",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2018-04-24 01:00:00"), 230, hjust = 1), label = sprintf("RMSE: %f", PJN2_rmse), color = "gray50") +
@@ -1141,7 +1173,7 @@ erNBN1_Y2 <- merge(NBN1_Y2_meandat_sub, sol_all_Y2[sol_all_Y2$source == "Narraga
 NBN1_Y2_rmse <- rmse(erNBN1_Y2$mean_length, erNBN1_Y2$L_allometric)
 
 NBN1_Y2 <- ggplot() + 
-  geom_point(data = NBN1_Y2_meandat, aes(Date, mean_length), size = 2) +
+  geom_point(data = NBN1_Y2_meandat, aes(Date, mean_length), shape = 'diamond', size = 3) +
   geom_errorbar(NBN1_Y2_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all_Y2[sol_all_Y2$source == "Narragansett Bay N 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2019-05-30 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", NBN1_Y2_rmse)) +
@@ -1172,11 +1204,11 @@ erNBS2_Y2 <- merge(NBS2_Y2_meandat_sub, sol_all_Y2[sol_all_Y2$source == "Narraga
 NBS2_Y2_rmse <- rmse(erNBS2_Y2$mean_length, erNBS2_Y2$L_allometric)
 
 NBS1_2_Y2 <- ggplot() + 
-  geom_point(data = NBS1_Y2_meandat, aes(Date, mean_length), size = 2) +
+  geom_point(data = NBS1_Y2_meandat, aes(Date, mean_length), shape = 'diamond', size = 3) +
   geom_errorbar(NBS1_Y2_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all_Y2[sol_all_Y2$source == "Narragansett Bay S 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2019-05-30 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", NBS1_Y2_rmse)) +
-  geom_point(data = NBS2_Y2_meandat, aes(Date, mean_length), color = "gray50") +
+  geom_point(data = NBS2_Y2_meandat, aes(Date, mean_length), color = "gray50", size = 3) +
   geom_errorbar(NBS2_Y2_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1, color = "gray50") +
   geom_smooth(data = sol_all_Y2[sol_all_Y2$source == "Narragansett Bay S 2",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2019-05-30 01:00:00"), 230, hjust = 1), label = sprintf("RMSE: %f", NBS2_Y2_rmse), color = "gray50") +
@@ -1207,11 +1239,11 @@ erPJS2_Y2 <- merge(PJS2_Y2_meandat_sub, sol_all_Y2[sol_all_Y2$source == "Point J
 PJS2_Y2_rmse <- rmse(erPJS2_Y2$mean_length, erPJS2_Y2$L_allometric)
 
 PJS1_2_Y2 <- ggplot() + 
-  geom_point(data = PJS1_Y2_meandat, aes(Date, mean_length), size = 2) +
+  geom_point(data = PJS1_Y2_meandat, aes(Date, mean_length), shape = 'diamond', size = 3) +
   geom_errorbar(PJS1_Y2_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond S 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2019-05-30 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", PJS1_Y2_rmse)) +
-  geom_point(data = PJS2_Y2_meandat, aes(Date, mean_length), color = "gray50") +
+  geom_point(data = PJS2_Y2_meandat, aes(Date, mean_length), color = "gray50", size = 3) +
   geom_errorbar(PJS2_Y2_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1, color = "gray50") +
   geom_smooth(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond S 2",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2019-05-30 01:00:00"), 230, hjust = 1), label = sprintf("RMSE: %f", PJS2_Y2_rmse), color = "gray50") +
@@ -1242,11 +1274,11 @@ erPJN2_Y2 <- merge(PJN2_Y2_meandat_sub, sol_all_Y2[sol_all_Y2$source == "Point J
 PJN2_Y2_rmse <- rmse(erPJN2_Y2$mean_length, erPJN2_Y2$L_allometric)
 
 PJN1_2_Y2 <- ggplot() + 
-  geom_point(data = PJN1_Y2_meandat, aes(Date, mean_length), size = 2) +
+  geom_point(data = PJN1_Y2_meandat, aes(Date, mean_length), shape = 'diamond', size = 3) +
   geom_errorbar(PJN1_Y2_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1) +
   geom_smooth(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond N 1",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2019-05-30 01:00:00"), 250, hjust = 1), label = sprintf("RMSE: %f", PJN1_Y2_rmse)) +
-  geom_point(data = PJN2_Y2_meandat, aes(Date, mean_length), color = "gray50") +
+  geom_point(data = PJN2_Y2_meandat, aes(Date, mean_length), color = "gray50", size = 3) +
   geom_errorbar(PJN2_Y2_meandat, mapping = aes(x = Date, ymin = mean_length-sd_length, ymax = mean_length+sd_length), width = 1, color = "gray50") +
   geom_smooth(data = sol_all_Y2[sol_all_Y2$source == "Point Judith Pond N 2",], aes(Date, L_allometric, color = source)) +
   geom_label(aes(as.POSIXct("2019-05-30 01:00:00"), 230, hjust = 1), label = sprintf("RMSE: %f", PJN2_Y2_rmse), color = "gray50") +
@@ -1288,7 +1320,7 @@ N_calibration <- ggplot() +
   geom_line(data = sol_EspinozaChapman1983_N_9, mapping = aes(x = N*1000000, y = J_EN_A*1000000, color = "Model of Espinoza and Chapman (1983) at 9°C")) +
   geom_line(data = sol_EspinozaChapman1983_N_18, mapping = aes(x = N*1000000, y = J_EN_A*1000000, color = "Model of Espinoza and Chapman (1983) at 18°C")) +
   geom_point(data = EC1983_9C_Nuptake_StM, mapping = aes(x = N*1000000, y = NuptakeRate*1000000, color="Espinoza and Chapman (1983), St. Margaret's Bay, 9°C"), size=3) +
-  geom_point(data = EC1983_18C_Nuptake_StM, mapping = aes(x = N*1000000, y = NuptakeRate*1000000, color="Espinoza and Chapman (1983), St. Margaret's Bay, 18°C"), size=3) +
+  geom_point(data = EC1983_18C_Nuptake_StM, mapping = aes(x = N*1000000, y = NuptakeRate*1000000, color="Espinoza and Chapman (1983), St. Margaret's Bay, 18°C"), shape = 23, fill = 'grey', size=3) +
   xlim(0, 80) +
   scale_color_manual(values = c("gray60", "gray0", "gray60", "gray0")) +
   theme_bw() +

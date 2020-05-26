@@ -33,17 +33,17 @@ w_O2 <- 32 #g/mol
 
 ##### Parameters compiled #####
 params_Lo <- c(#maximum volume-specific assimilation rate of N before temperature correction
-  JENAM = 1.5e-4, #mol N / molM_V / h
-  #maximum surface-specific assimilation rate of N
+  JENAM = 1.5e-4, #mol N / molV / h
+  #half saturation constant of N uptake
   K_N = 2.5e-6, #molNO3 and NO2/L
   #max volume-specific carbon dioxide assimilation rate
-  JCO2M = 0.0075, #molC/molM_V/h
+  JCO2M = 0.0075, #mol DIC/molV/h
   #half saturation constant of C uptake
   K_C = 4e-7, #mol DIC/L
   #maximum volume-specific carbon assimilation rate
-  JECAM = 0.282, #molC/molM_V/h
+  JECAM = 0.282, #molC/molV/h
   #Photosynthetic unit density
-  rho_PSU = 0.5, #mol PSU/ mol Mv
+  rho_PSU = 0.5, #mol PSU/ mol V
   #binding probability of photons to a Light SU
   b_I = 0.5, #dimensionless
   #Specific photon arrival cross section
@@ -52,23 +52,23 @@ params_Lo <- c(#maximum volume-specific assimilation rate of N before temperatur
   k_I = 0.075, #molγ molPS–1 h–1
   #Yield factor of C reserve to photon
   y_I_C = 10, #mol γ mol C-1
-  #Yield factor of C reserve to CO2
-  y_CO2_C = 1, #mol CO2 mol C-1
+  #Yield factor of C reserve to DIC
+  y_CO2_C = 1, #mol DIC mol C-1
   #Yield factor of photon to O2
   y_LO2 = 0.125, #molO2 molγ –1
   #reserve turnover
-  kE_C = 0.05,
-  kE_N = 0.01, 
+  kE_C = 0.02, #0.05, #1/h
+  kE_N = 0.04, #0.01, #1/h
   #fraction of rejection flux from growth SU incorporated back into i-reserve
   kappa_Ei = 0.9, #dimensionless
   #yield of structure on N reserve (percent of N in structure)
-  y_EN_V = 0.04, #mol N/mol M_V
+  y_EN_V = 0.04, #mol N/mol V
   #yield of structure on C reserve (percent of C in structure)
-  y_EC_V = 1, #mol C/mol M_V
+  y_EC_V = 1, #mol C/mol V
   #specific maintenance costs requiring N before temp correction
-  JENM = 4e-6, #mol N/molM_V/h
+  JENM = 4*10^-6, #4e-6, #mol N/molM_V/h
   #specific maintenance costs requiring C before temp correction
-  JECM = 1e-6, #mol C/molM_V/h
+  JECM = 1*10^-6, #1e-6, #mol C/molM_V/h
   #Arrhenius temperature
   T_A = 6314.3, # K
   #Upper boundary of temperature tolerance
@@ -785,14 +785,13 @@ Wickford1_Y2_SA <- sensFun(SenseFunc2, params_Lo, sensvar = c("m_EC", "m_EN", "M
 #RomePt1_Y2
 W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
-WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
-WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
-names(WSA_Y2)[1] <- "Site" #only necessary for some computers to run this code
-RomePt_WSA <- filter(WSA_Y2, Site == "Rome Point") #filter by site
+GSO_N <- read.csv("T98BayNitrate.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
+GSO_N$Date <- mdy(GSO_N$Date) #convert dates
+GSO_N <- GSO_N[103:124,]
 daily <- seq(as.Date("2018-12-20"), as.Date("2019-05-24"), by="days") #the date range for kelp on the farm
-RomePt_WSA$NO3NO2_µM <- RomePt_WSA$NO3NO2_µM/1000000 #convert from micromoles/L to moles/L
+GSO_N$NO3NO2 <- GSO_N$NO3NO2/1000000 #convert from micromoles/L to moles/L
 #multiplied by 24 to take daily values to hourly values
-N_field <- approxfun(x = c(1*24, 64*24, 84*24, 155*24), y = c(RomePt_WSA$NO3NO2_µM), method = "linear", rule = 2) #N forcing function
+N_field <- approxfun(x = c(8*24, 14*24, 20*24, 29*24, 35*24, 41*24, 48*24, 56*24, 62*24, 69*24, 79*24, 83*24, 93*24, 99*24, 107*24, 111*24, 118*24, 125*24, 132*24, 139*24, 146*24, 153*24), y = c(GSO_N$NO3NO2), method = "linear", rule = 2) #N forcing function
 ###### DIC forcing set-up ###########
 Segarra2002Carbon <- read.csv("BrentonPoint_Segarra2002CarbonData.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import literature DIC data
 names(Segarra2002Carbon)[1] <- "Date" #Only necessary to run this code on some computers
@@ -827,15 +826,13 @@ RomePt1_Y2_SA <- sensFun(SenseFunc2, params_Lo, sensvar = c("m_EC", "m_EN", "M_V
 #RomePt2_Y2
 W <- 0.05 #inital biomass for conversions (cannot put in initial conditions)
 ###### N forcing set-up##############
-WSA_Y2 <- read.csv("WaterSamplesY2.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
-WSA_Y2$Date <- mdy(WSA_Y2$Date) #convert dates
-names(WSA_Y2)[1] <- "Site" #only necessary for some computers to run this code
-RomePt_WSA <- filter(WSA_Y2, Site == "Rome Point") #filter by site
+GSO_N <- read.csv("T98BayNitrate.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import water quality data
+GSO_N$Date <- mdy(GSO_N$Date) #convert dates
+GSO_N <- GSO_N[112:124,]
 daily <- seq(as.Date("2019-2-21"), as.Date("2019-05-24"), by="days") #date range for the kelp on the farm
-RomePt_WSA$NO3NO2_µM <- RomePt_WSA$NO3NO2_µM/1000000 #convert from micromoles/L to moles/L
-RomePt_WSA <- RomePt_WSA[2:4,] #subset based on what data is relevant here
-#multiplying by 24 to converty from daily values to hourly values
-N_field <- approxfun(x = c(1*24, 21*24, 92*24), y = c(RomePt_WSA$NO3NO2_µM), method = "linear", rule = 2) #N forcing function
+GSO_N$NO3NO2 <- GSO_N$NO3NO2/1000000 #convert from micromoles/L to moles/L
+#multiplied by 24 to take daily values to hourly values
+N_field <- approxfun(x = c(6*24, 16*24, 20*24, 30*24, 36*24, 44*24, 48*24, 55*24, 62*24, 69*24, 76*24, 83*24, 90*24), y = c(GSO_N$NO3NO2), method = "linear", rule = 2) #N forcing function
 ###### DIC forcing set-up ###########
 Segarra2002Carbon <- read.csv("BrentonPoint_Segarra2002CarbonData.csv", header = TRUE, fileEncoding="UTF-8-BOM") #Import lit TCO2 data
 names(Segarra2002Carbon)[1] <- "Date" #Only necessary to run this code on some computers
@@ -909,8 +906,8 @@ SA_SUM$Parameter <- factor(SA_SUM$Parameter, as.character(SA_SUM$Parameter)) #to
 #Figure 10
 ggplot(data = SA_SUM) +
   geom_point(mapping = aes(x = L1, y = Parameter), size = 3) +
-  geom_abline(mapping = aes(slope = 0, intercept = 0)) +
-  xlim(0, 8000) +
+  #geom_abline(mapping = aes(slope = 0, intercept = 0)) +
+  #xlim(0, 8000) +
   theme_bw() +
   theme(axis.line = element_line(colour = "black"), panel.grid.minor = element_blank(), panel.border = element_blank()) +
   theme(axis.text=element_text(size=12), axis.title=element_text(size=16)) +

@@ -20,7 +20,7 @@ rates_Lo <- function(t, state, parameters) {
     
     J_EN_AM <-  JENAM * C_T #temperature correction of max assimilation rate of N
     #Specific assimilation rate of N
-    J_EN_A <- J_EN_AM*(N_field(t)/(N_field(t)+K_N))  #J_EN_A units: mol N/molM_V/h
+    J_EN_A <- J_EN_AM*(N_field(t)/(N_field(t)+K_N))  #J_EN_A units: mol N/molV/h
     N <- N_field(t) #just to save N forcing output
     
     J_CO2_M <- JCO2M * C_T #Temperature correction max uptake rate of CO2 (photon capture not influenced by temp) J_CO2_M units: molC/molM_V/d
